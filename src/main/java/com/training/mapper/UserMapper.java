@@ -8,22 +8,19 @@ import com.training.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(imports = Role.class)//(nullValueMapMappingStrategy = NullValueMappingStrategy.RETURN_DEFAULT)
+@Mapper(imports = Role.class)
 public interface UserMapper {
 
     OutputUserDto convertToDto(User user);
 
-    @Mapping(target = "role", defaultExpression = "java(Role.EMPLOYEE)")
+    @Mapping(target = "role", expression = "java(getEmployeeRole())")
     User convertToEntity(InputUserDto inputUserDto);
-//    default User convertToEntity(InputUserDto inputUserDto) {
-//        return User.builder()
-//                .email(inputUserDto.getEmail())
-//                .password(inputUserDto.getPassword())
-//                .role(Role.EMPLOYEE)
-//                .build();
-//    }
 
     User convertUpdatedToEntity(UpdatedUserDto updatedUserDto);
+
+    default Role getEmployeeRole() {
+        return Role.EMPLOYEE;
+    }
 
 //    List<UserDto> convertListToDto(List<User> users);
 //
