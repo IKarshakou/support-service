@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: fill-tickets-table
+      author: IKarshakou
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            encoding: UTF-8
+            stripComments: true
+            path: db/changelog/changeset/sql/30-fill-tickets-table.sql
+        - tagDatabase:
+            tag: fill_tickets_table

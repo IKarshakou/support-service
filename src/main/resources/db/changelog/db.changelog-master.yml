@@ -1,0 +1,22 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changeset/01-changeset-init-database.yml
+  - include:
+      file: db/changelog/changeset/02-changeset-alter-table-comments.yml
+  - include:
+      file: db/changelog/changeset/03-changeset-alter-table-feedbacks-and-history.yml
+  - include:
+      file: db/changelog/changeset/04-changeset-alter-table-tickets-column-description.yml
+  - include:
+      file: db/changelog/changeset/10-changeset-fill-users-table.yml
+  - include:
+      file: db/changelog/changeset/20-changeset-fill-categories-table.yml
+  - include:
+      file: db/changelog/changeset/30-changeset-fill-tickets-table.yml
+  - include:
+      file: db/changelog/changeset/40-changeset-fill-feedbacks-table.yml
+  - include:
+      file: db/changelog/changeset/50-changeset-fill-comments-table.yml
+#  - include:
+#      file: db/changelog/changeset/60-changeset-fill-history-table.yml
+

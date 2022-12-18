@@ -1,0 +1,24 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: ${CONTEXT_PATH:/support-service}
+spring:
+  application:
+    name: support-service
+  datasource:
+    driver-class-name: ${TEST_DATABASE_DRIVER:org.h2.Driver}
+    url: ${TEST_DATABASE_URL:jdbc:h2://mem:db;DB_CLOSE_DELAY=-1}
+    username: ${TEST_DATABASE_USERNAME:sa}
+    password: ${TEST_DATABASE_PASSWORD:sa}
+  jpa:
+#    database: postgresql
+    properties:
+      hibernate:
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
+        format_sql: true
+        show_sql: true
+    hibernate:
+      ddl-auto: create-drop
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yml

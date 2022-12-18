@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: alter-table-comments-column-date
+      author: IKarshakou
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            encoding: UTF-8
+            stripComments: true
+            path: db/changelog/changeset/sql/02-alter-table-comments.sql
+        - tagDatabase:
+            tag: comments_column_to_timestamp

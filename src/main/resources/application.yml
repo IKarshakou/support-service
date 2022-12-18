@@ -1,0 +1,67 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: ${CONTEXT_PATH:/support-service}
+spring:
+  application:
+    name: support-service
+  datasource:
+    driver-class-name: ${DATABASE_DRIVER}
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        dialect: ${HIBERNATE_DIALECT}
+        hbm2ddl:
+          auto: update
+        format_sql: true
+        show_sql: true
+    hibernate:
+      ddl-auto: none
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yml
+    driver-class-name: ${DATABASE_DRIVER}
+    url: ${DATABASE_URL}
+    user: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  mail:
+    host: ${EMAIL_HOST:smtp.yopmail.com}
+    username: ${EMAIL_ADDRESS:justSomeAdminForTests@yopmail.com}
+    password: ${EMAIL_PASSWORD:}
+    port: 587
+    properties:
+      mail:
+        debug: true
+        smtp:
+          ssl:
+            trust: "*"
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+  jwt:
+    token:
+      secret: ${JWT_TOKEN_SECRET}
+      expired: ${JWT_TOKEN_EXPIRED}
+  servlet:
+    multipart:
+      location: ${MULTIPART_LOCATION:C:/Java/2.Git/HelpDesk/helpdesk-with-datajpa/src/main/resources/attachments/uploads}
+      max-file-size: 5MB
+      max-request-size: 5MB
+upload:
+  path: ${ATTACHMENTS_DIR:src/main/resources/attachments/attachments}
+#  path: ${ATTACHMENTS_DIR:C:/Java/2.Git/HelpDesk/helpdesk-with-datajpa/src/main/resources/attachments/attachments}
+logging:
+  file:
+    name: logs/helpdesk.log
+  level:
+    root: info
+#    org.springframework.security.web.FilterChainProxy: DEBUG
+  logback:
+    rollingpolicy:
+      file-name-pattern: logs/helpdesk-%d{yyyy-MM-dd}.%i.log

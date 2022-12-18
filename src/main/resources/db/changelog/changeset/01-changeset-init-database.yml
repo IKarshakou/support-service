@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: init-database
+      author: IKarshakou
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            encoding: UTF-8
+            stripComments: true
+            path: db/changelog/changeset/sql/01-create-database.sql
+        - tagDatabase:
+            tag: db_init

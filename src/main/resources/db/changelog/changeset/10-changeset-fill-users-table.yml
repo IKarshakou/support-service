@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: fill-users-table
+      author: IKarshakou
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            encoding: UTF-8
+            stripComments: true
+            path: db/changelog/changeset/sql/10-fill-users-table.sql
+        - tagDatabase:
+            tag: fill_users_table

@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: fill-categories-table
+      author: IKarshakou
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            encoding: UTF-8
+            stripComments: true
+            path: db/changelog/changeset/sql/20-fill-categories-table.sql
+        - tagDatabase:
+            tag: fill_categories_table

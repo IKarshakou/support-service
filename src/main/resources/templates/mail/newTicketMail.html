@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>New ticket for approval</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<div class="contentContainer">
+    <h2 th:text="|New ticket for approval|"></h2>
+    <p th:text="|Dear Managers,|"></p>
+    <p></p>
+    <p>New ticket [<a th:href="@{~/client-app/TicketOverview}" th:text="${ticketId}"></a>] is waiting for approval.</p>
+</div>
+</body>
+</html>
