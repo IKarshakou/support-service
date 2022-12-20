@@ -10,28 +10,27 @@ spring:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yml
   jpa:
     properties:
       hibernate:
         dialect: ${HIBERNATE_DIALECT}
         hbm2ddl:
-          auto: update
+          auto: validate
         format_sql: true
         show_sql: true
     hibernate:
       ddl-auto: none
-  liquibase:
-    enabled: true
-    change-log: classpath:db/changelog/db.changelog-master.yml
-    driver-class-name: ${DATABASE_DRIVER}
-    url: ${DATABASE_URL}
-    user: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
   mail:
-    host: ${EMAIL_HOST:smtp.yopmail.com}
-    username: ${EMAIL_ADDRESS:justSomeAdminForTests@yopmail.com}
-    password: ${EMAIL_PASSWORD:}
-    port: 587
+#    host: ${EMAIL_HOST:smtp.yopmail.com}
+#    username: ${EMAIL_ADDRESS:justSomeAdminForTests@yopmail.com}
+#    password: ${EMAIL_PASSWORD:}
+#    port: ${EMAIL_PORT:587}
+    host: localhost
+    username: justSomeAdminForTests@yopmail.com
+    password: root
+    port: 1025
     properties:
       mail:
         debug: true
@@ -50,18 +49,17 @@ spring:
       expired: ${JWT_TOKEN_EXPIRED}
   servlet:
     multipart:
-      location: ${MULTIPART_LOCATION:C:/Java/2.Git/HelpDesk/helpdesk-with-datajpa/src/main/resources/attachments/uploads}
+      location: ${MULTIPART_LOCATION:src/main/resources/attachments/uploads}
       max-file-size: 5MB
       max-request-size: 5MB
 upload:
   path: ${ATTACHMENTS_DIR:src/main/resources/attachments/attachments}
-#  path: ${ATTACHMENTS_DIR:C:/Java/2.Git/HelpDesk/helpdesk-with-datajpa/src/main/resources/attachments/attachments}
 logging:
   file:
-    name: logs/helpdesk.log
+    name: logs/support-service.log
   level:
     root: info
 #    org.springframework.security.web.FilterChainProxy: DEBUG
   logback:
     rollingpolicy:
-      file-name-pattern: logs/helpdesk-%d{yyyy-MM-dd}.%i.log
+      file-name-pattern: logs/support-service-%d{yyyy-MM-dd}.%i.log

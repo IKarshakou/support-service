@@ -1,12 +1,13 @@
 package com.training.service.impl;
 
+import com.training.entity.Ticket;
 import com.training.entity.User;
 import com.training.service.MailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory;;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -34,7 +35,7 @@ public class MailServiceImpl implements MailService {
     private static final String CANCELLED_BY_MANAGER_TICKET_MAIL_TEMPLATE_NAME = "mail/cancelledByManagerTicketMail";
     private static final String CANCELLED_BY_ENGINEER_TICKET_MAIL_TEMPLATE_NAME = "mail/cancelledByEngineerTicketMail";
     private static final String DONE_TICKET_MAIL_TEMPLATE_NAME = "mail/doneTicketMail";
-    private static final String FEEDBACK_PROVIDED_MAIL_TEMPLATE_NAME = "mail/feedbackProvidedTicketMail";
+    private static final String FEEDBACK_PROVIDED_MAIL_TEMPLATE_NAME = "mail/feedbackProvidedMail";
 
     private static final String NEW_TICKET_SUBJECT = "New ticket for approval";
     private static final String TICKET_APPROVED_SUBJECT = "Ticket was approved";
@@ -46,11 +47,11 @@ public class MailServiceImpl implements MailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine htmlTemplateEngine;
 
-    @Value("spring.mail.username")
+    @Value("${spring.mail.username}")
     private String emailFrom;
 
     @Override
-    public void sendTicketHandlingEmail(List<User> recipients, Long ticketId, String subject) {
+    public void sendTicketHandlingEmail(List<User> recipients, Ticket ticket, String subject) {
         if (recipients == null || recipients.isEmpty()) {
             log.warn(INVALID_RECIPIENT_LIST_LOG);
             throw new IllegalArgumentException(MESSAGING_EXCEPTION_MSG);
@@ -67,7 +68,7 @@ public class MailServiceImpl implements MailService {
 
                 Context context = new Context();
                 context.setVariable("recipient", recipient);
-                context.setVariable("ticketId", ticketId);
+                context.setVariable("ticket", ticket);
 
                 String htmlContent = chooseTemplate(subject, context, recipients.size());
                 message.setText(htmlContent, true);

@@ -15,14 +15,6 @@ public interface CommentMapper {
 
     Comment convertToEntity(InputCommentDto inputCommentDto);
 
-    default List<Comment> convertToEntityList(InputCommentDto inputCommentDto) {
-        List<Comment> comments = new ArrayList<>();
-        if (inputCommentDto != null) {
-            comments.add(convertToEntity(inputCommentDto));
-        }
-        return comments;
-    }
-
     List<OutputCommentDto> convertListToDto(List<Comment> comments);
 
     List<Comment> convertListToEntity(List<InputCommentDto> commentsDto);

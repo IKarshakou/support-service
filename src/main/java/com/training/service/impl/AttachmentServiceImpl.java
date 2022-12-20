@@ -20,6 +20,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -63,12 +65,14 @@ public class AttachmentServiceImpl implements AttachmentService, InitializingBea
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OutputAttachmentDto> getAttachments(Long ticketId) {
         List<Attachment> attachments = attachmentRepository.getAttachmentsByTicketId(ticketId);
         return attachmentMapper.convertListToDto(attachments);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AttachmentToDownloadDto getAttachmentToDownload(Long attachmentId) {
         Attachment attachment = attachmentRepository
                 .findById(attachmentId)
@@ -78,6 +82,7 @@ public class AttachmentServiceImpl implements AttachmentService, InitializingBea
     }
 
     @Override
+    @Transactional
     public void uploadAttachmentsToServer(Ticket ticket, List<MultipartFile> multipartAttachments) {
         if (multipartAttachments != null) {
             List<Attachment> attachments = new ArrayList<>();
@@ -109,6 +114,7 @@ public class AttachmentServiceImpl implements AttachmentService, InitializingBea
     }
 
     @Override
+    @Transactional
     public void deleteAttachment(Long attachmentId) {
         Attachment attachment = attachmentRepository
                 .findById(attachmentId)

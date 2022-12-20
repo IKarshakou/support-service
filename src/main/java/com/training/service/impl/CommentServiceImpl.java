@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -33,6 +34,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<OutputCommentDto> findAllByTicketId(Long id) {
         List<Comment> comments = commentRepository.findAllByTicketId(id);
 
@@ -44,6 +46,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public OutputCommentDto addCommentToTicket(Long ticketId, InputCommentDto inputCommentDto) {
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder
                 .getContext()

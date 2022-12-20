@@ -110,6 +110,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+### Liquibase template
+.jpb/
+
 #--------------------------------------------------------
 *.ser
 checkstyle.xml

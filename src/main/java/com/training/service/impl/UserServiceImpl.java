@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional(readOnly = true)
     public OutputUserDto getUserById(Long id) {
         log.info("Getting User by ID = [{}]", id);
         return userMapper.convertToDto(userRepository
@@ -39,6 +41,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OutputUserDto getUserByEmail(String email) {
         log.info("Getting User by email = [{}]", email);
 
@@ -48,6 +51,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OutputUserDto> getAllUsers() {
         List<User> users = userRepository.findAll();
         log.info("Getting all Users. Result is empty = [{}]", users.isEmpty());
@@ -59,6 +63,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public OutputUserDto addUser(InputUserDto inputUserDto) {
         User user = userMapper.convertToEntity(inputUserDto);
         log.info("Adding User to database: [{}].", user);
@@ -72,6 +77,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void updateUser(UpdatedUserDto updatedUserDto) {
         User user = userMapper.convertUpdatedToEntity(updatedUserDto);
         log.info("Updating User with ID = [{}].", user.getId());
@@ -85,6 +91,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void removeUser(Long id) {
         log.info("Removing User with ID = [{}]", id);
 

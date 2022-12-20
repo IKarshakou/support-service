@@ -29,8 +29,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -66,6 +68,7 @@ public class TicketServiceImpl implements TicketService {
     private final TicketMapper ticketMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<OutputTicketDto> findAll() {
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder
                 .getContext()
@@ -99,6 +102,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OutputTicketWithDetailsDto findById(Long id) {
         return ticketMapper.convertToTicketWithDetailsDto(ticketRepository
                 .findById(id)
@@ -106,6 +110,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @Transactional
     public void changeState(Long id, String inputAction) {
         Ticket ticket = ticketRepository
                 .findById(id)
@@ -135,16 +140,18 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @Transactional
     public OutputTicketDto createNewTicket(InputTicketDto inputTicketDto, List<MultipartFile> attachments) {
-        Ticket ticket = ticketMapper.convertToEntity(inputTicketDto);
+        Ticket ticket = ticketMapper.convertToEntity(inputTicketDto, List.of(inputTicketDto.getComment()));
         ticket.setState(State.NEW);
 
         return saveTicketToDatabase(ticket, attachments);
     }
 
     @Override
+    @Transactional
     public OutputTicketDto saveTicketAsDraft(InputDraftTicketDto inputTicketDto, List<MultipartFile> attachments) {
-        Ticket ticket = ticketMapper.convertDraftToEntity(inputTicketDto);
+        Ticket ticket = ticketMapper.convertDraftToEntity(inputTicketDto, List.of(inputTicketDto.getComment()));
         ticket.setState(State.DRAFT);
 
         return saveTicketToDatabase(ticket, attachments);
@@ -186,10 +193,10 @@ public class TicketServiceImpl implements TicketService {
 
         ticketRepository.save(ticket);
 
-//        if (isNew(ticket)) {
-//            List<User> recipients = userRepository.findAllManagers();
-//            mailService.sendTicketHandlingEmail(recipients, ticket.getId(), NEW_TICKET_SUBJECT);
-//        }
+        if (isNew(ticket)) {
+            List<User> recipients = userRepository.findAllManagers();
+            mailService.sendTicketHandlingEmail(recipients, ticket, NEW_TICKET_SUBJECT);
+        }
 
         return ticketMapper.convertToDto(ticket);
     }
@@ -226,7 +233,7 @@ public class TicketServiceImpl implements TicketService {
         ticket.getHistory().add(ticketEditedHistory);
 
         if (isNew(ticket)) {
-            History statusChangedHistory = History.builder()
+            History ticketStateHistory = History.builder()
                     .ticket(ticket)
                     .action(TICKET_STATUS_CHANGED_ACTION)
                     .description(TICKET_STATUS_CHANGED_DESCRIPTION.formatted(
@@ -234,7 +241,7 @@ public class TicketServiceImpl implements TicketService {
                             ticket.getState().name()))
                     .user(user)
                     .build();
-            ticket.getHistory().add(statusChangedHistory);
+            ticket.getHistory().add(ticketStateHistory);
         }
     }
 
@@ -242,8 +249,10 @@ public class TicketServiceImpl implements TicketService {
         if ((userIsManager(userPrincipal) && isNew(ticket))
                 && (employeeIsOwner(ticket) || userIsOwner(userPrincipal, ticket))) {
 
-            History ticketChangeStateHistory = History.builder()
-                    .user(User.builder().id(userPrincipal.getId()).build())
+            User approver = User.builder().id(userPrincipal.getId()).build();
+
+            History ticketStateHistory = History.builder()
+                    .user(approver)
                     .ticket(ticket)
                     .action(TICKET_STATUS_CHANGED_ACTION)
                     .description(TICKET_STATUS_CHANGED_DESCRIPTION.formatted(
@@ -251,11 +260,12 @@ public class TicketServiceImpl implements TicketService {
                             State.APPROVED.name()))
                     .build();
             ticket.setState(State.APPROVED);
-            ticket.getHistory().add(ticketChangeStateHistory);
+            ticket.setApprover(approver);
+            ticket.getHistory().add(ticketStateHistory);
 
-//            List<User> recipients = userRepository.findAllEngineers();
-//            recipients.add(ticket.getOwner());
-//            mailService.sendTicketHandlingEmail(recipients, ticket.getId(), TICKET_APPROVED_SUBJECT);
+            List<User> recipients = userRepository.findAllEngineers();
+            recipients.add(ticket.getOwner());
+            mailService.sendTicketHandlingEmail(recipients, ticket, TICKET_APPROVED_SUBJECT);
         } else {
             throw new TicketNotAvailableException(NOT_ENOUGH_PERMISSIONS_MSG);
         }
@@ -265,7 +275,7 @@ public class TicketServiceImpl implements TicketService {
         if ((userIsManager(userPrincipal) && isNew(ticket))
                 && (employeeIsOwner(ticket) || userIsOwner(userPrincipal, ticket))) {
 
-            History ticketChangeStateHistory = History.builder()
+            History ticketStateHistory = History.builder()
                     .user(User.builder().id(userPrincipal.getId()).build())
                     .ticket(ticket)
                     .action(TICKET_STATUS_CHANGED_ACTION)
@@ -274,9 +284,9 @@ public class TicketServiceImpl implements TicketService {
                             State.DECLINED.name()))
                     .build();
             ticket.setState(State.DECLINED);
-            ticket.getHistory().add(ticketChangeStateHistory);
+            ticket.getHistory().add(ticketStateHistory);
 
-//            mailService.sendTicketHandlingEmail(List.of(ticket.getOwner()), ticket.getId(), TICKET_DECLINED_SUBJECT);
+            mailService.sendTicketHandlingEmail(List.of(ticket.getOwner()), ticket, TICKET_DECLINED_SUBJECT);
         } else {
             throw new TicketNotAvailableException(NOT_ENOUGH_PERMISSIONS_MSG);
         }
@@ -295,7 +305,7 @@ public class TicketServiceImpl implements TicketService {
                 || (userIsEngineer(userPrincipal)
                 && ticket.getState().equals(State.APPROVED))) {
 
-            History ticketChangeStateHistory = History.builder()
+            History ticketStateHistory = History.builder()
                     .user(User.builder().id(userPrincipal.getId()).build())
                     .ticket(ticket)
                     .action(TICKET_STATUS_CHANGED_ACTION)
@@ -305,15 +315,18 @@ public class TicketServiceImpl implements TicketService {
                     .build();
             State previousState = ticket.getState();
             ticket.setState(State.CANCELED);
-            ticket.getHistory().add(ticketChangeStateHistory);
+            ticket.getHistory().add(ticketStateHistory);
 
-//            List<User> recipients;
-//            if (previousState.equals(State.NEW)) {
-//                recipients = List.of(ticket.getOwner());
-//            } else {
-//                recipients = List.of(ticket.getOwner(), ticket.getApprover());
-//            }
-//            mailService.sendTicketHandlingEmail(recipients, ticket.getId(), TICKET_CANCELLED_SUBJECT);
+            List<User> recipients = new ArrayList<>();
+            if (previousState.equals(State.NEW)) {
+                recipients = List.of(ticket.getOwner());
+            } else if (previousState.equals(State.APPROVED)) {
+                recipients = List.of(ticket.getOwner(), ticket.getApprover());
+            }
+
+            if (!recipients.isEmpty()) {
+                mailService.sendTicketHandlingEmail(recipients, ticket, TICKET_CANCELLED_SUBJECT);
+            }
         } else {
             throw new TicketNotAvailableException(NOT_ENOUGH_PERMISSIONS_MSG);
         }
@@ -321,16 +334,19 @@ public class TicketServiceImpl implements TicketService {
 
     private void assignTicket(Ticket ticket, UserPrincipal userPrincipal) {
         if (userIsEngineer(userPrincipal) && ticket.getState().equals(State.APPROVED)) {
-            History ticketChangeStateHistory = History.builder()
-                    .user(User.builder().id(userPrincipal.getId()).build())
+            User assignedUser = User.builder().id(userPrincipal.getId()).build();
+
+            History ticketStateHistory = History.builder()
+                    .user(assignedUser)
                     .ticket(ticket)
                     .action(TICKET_STATUS_CHANGED_ACTION)
                     .description(TICKET_STATUS_CHANGED_DESCRIPTION.formatted(
                             ticket.getState().name(),
                             State.IN_PROGRESS.name()))
                     .build();
+            ticket.setAssignee(assignedUser);
             ticket.setState(State.IN_PROGRESS);
-            ticket.getHistory().add(ticketChangeStateHistory);
+            ticket.getHistory().add(ticketStateHistory);
         } else {
             throw new TicketNotAvailableException(NOT_ENOUGH_PERMISSIONS_MSG);
         }
@@ -349,7 +365,7 @@ public class TicketServiceImpl implements TicketService {
             ticket.setState(State.DONE);
             ticket.getHistory().add(ticketChangeStateHistory);
 
-//            mailService.sendTicketHandlingEmail(List.of(ticket.getOwner()), ticket.getId(), TICKET_DONE_SUBJECT);
+            mailService.sendTicketHandlingEmail(List.of(ticket.getOwner()), ticket, TICKET_DONE_SUBJECT);
         } else {
             throw new TicketNotAvailableException(NOT_ENOUGH_PERMISSIONS_MSG);
         }
