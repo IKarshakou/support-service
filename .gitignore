@@ -110,6 +110,15 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Windows some files
+*.txt
+*.doc
+*.docx
+*.pdf
+*.png
+*.jpg
+*.jpeg
+
 ### Liquibase template
 .jpb/
 
