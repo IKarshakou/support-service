@@ -19,6 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +40,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     private final FeedbackMapper feedbackMapper;
 
     @Override
+    @Transactional
     public void addFeedback(Long ticketId, InputFeedbackDto inputFeedbackDto) {
         Feedback feedback = feedbackMapper.convertToEntity(inputFeedbackDto);
         Ticket ticket = ticketRepository
@@ -60,14 +64,15 @@ public class FeedbackServiceImpl implements FeedbackService {
             feedback.setTicket(ticket);
 
             feedbackRepository.save(feedback);
-//            mailService
-//                    .sendTicketHandlingEmail(List.of(ticket.getAssignee()), ticket.getId(), FEEDBACK_PROVIDED_SUBJECT);
+            mailService
+                    .sendTicketHandlingEmail(List.of(ticket.getAssignee()), ticket, FEEDBACK_PROVIDED_SUBJECT);
         } else {
             throw new TicketNotAvailableException(NOT_ENOUGH_PERMISSIONS_MSG);
         }
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OutputFeedbackDto getFeedback(Long ticketId) {
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder
                 .getContext()

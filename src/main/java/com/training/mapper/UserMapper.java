@@ -23,6 +23,4 @@ public interface UserMapper {
     }
 
 //    List<UserDto> convertListToDto(List<User> users);
-//
-//    List<User> convertListToEntity(List<UserDto> usersDto);
 }

@@ -7,9 +7,9 @@
 <body>
 <div class="contentContainer">
     <h2 th:text="|New ticket for approval|"></h2>
-    <p th:text="|Dear Managers,|"></p>
+    <p th:text="|Dear ${recipient.getFirstName()} ${recipient.getLastName()},|"></p>
     <p></p>
-    <p>New ticket [<a th:href="@{~/client-app/TicketOverview}" th:text="${ticketId}"></a>] is waiting for approval.</p>
+    <p>New ticket [<a th:href="@{~/client-app/{id}/TicketOverview(id=${ticket.getId()})}" th:text="${ticket.getName()}"></a>] is waiting for approval.</p>
 </div>
 </body>
 </html>

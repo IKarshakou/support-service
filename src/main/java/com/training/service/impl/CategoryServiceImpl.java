@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,11 +29,13 @@ public class CategoryServiceImpl implements CategoryService {
     private static final String CATEGORY_ALREADY_EXISTS_MSG = "Category with this name already exists.";
 
     @Override
+    @Transactional(readOnly = true)
     public List<CategoryDto> findAll() {
         return categoryMapper.convertListToDto(categoryRepository.findAll());
     }
 
     @Override
+    @Transactional
     public CategoryDto addCategory(CategoryDto categoryDto) {
         Category category = categoryMapper.convertToEntity(categoryDto);
 
@@ -44,6 +47,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public void deleteCategory(Long id) {
         Category category = categoryRepository
                 .findById(id)

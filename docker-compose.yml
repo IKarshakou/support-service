@@ -1,0 +1,38 @@
+version: '3.8'
+
+volumes:
+  postgre_support_service:
+
+services:
+  database:
+    image: postgres:alpine
+    restart: always
+    volumes:
+      - postgre_support_service:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=support-service
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+
+  support-service:
+    build: .
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - TZ=Europe/Minsk
+      - SERVER_PORT=8080
+      - CONTEXT_PATH=/support-service
+      - DATABASE_DRIVER=org.postgresql.Driver
+      - DATABASE_URL=jdbc:postgresql://database:5432/support-service
+      - DATABASE_USERNAME=root
+      - DATABASE_PASSWORD=root
+      - HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect
+      - EMAIL_HOST=smtp.gmail.com
+      - EMAIL_PORT=587
+      - EMAIL_ADDRESS=
+      - EMAIL_PASSWORD=
+      - JWT_TOKEN_SECRET=some-jwt-secret-word-jbaTes8&asdIsd
+      - JWT_TOKEN_EXPIRED=30000000000
+      - MULTIPART_LOCATION=src/main/resources/attachments/uploads
+      - ATTACHMENTS_DIR=src/main/resources/attachments/attachments

@@ -11,7 +11,6 @@ spring:
     username: ${TEST_DATABASE_USERNAME:sa}
     password: ${TEST_DATABASE_PASSWORD:sa}
   jpa:
-#    database: postgresql
     properties:
       hibernate:
         dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
@@ -20,5 +19,4 @@ spring:
     hibernate:
       ddl-auto: create-drop
   liquibase:
-    enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yml
