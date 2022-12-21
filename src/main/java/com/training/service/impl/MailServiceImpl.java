@@ -4,10 +4,8 @@ import com.training.entity.Ticket;
 import com.training.entity.User;
 import com.training.service.MailService;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -20,10 +18,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MailServiceImpl implements MailService {
-
-    private static final Logger log = LoggerFactory.getLogger(MailServiceImpl.class);
 
     private static final String MESSAGING_EXCEPTION_MSG = "Failed to send email.";
     private static final String INVALID_RECIPIENT_LIST_LOG = "Invalid recipient list, can't to send email.";
@@ -44,6 +41,9 @@ public class MailServiceImpl implements MailService {
     private static final String TICKET_DONE_SUBJECT = "Ticket was done";
     private static final String FEEDBACK_PROVIDED_SUBJECT = "Feedback was provided";
 
+    private static final String RECIPIENT_CONTEXT_KEY = "recipient";
+    private static final String TICKET_CONTEXT_KEY = "ticket";
+
     private final JavaMailSender mailSender;
     private final TemplateEngine htmlTemplateEngine;
 
@@ -58,20 +58,20 @@ public class MailServiceImpl implements MailService {
         }
 
         try {
-            for (User recipient : recipients) {
-                MimeMessage mimeMessage = mailSender.createMimeMessage();
-                MimeMessageHelper message = new MimeMessageHelper(mimeMessage, StandardCharsets.UTF_8.name());
+            for (var recipient : recipients) {
+                var mimeMessage = mailSender.createMimeMessage();
+                var messageHelper = new MimeMessageHelper(mimeMessage, StandardCharsets.UTF_8.name());
 
-                message.setTo(recipient.getEmail());
-                message.setFrom(emailFrom);
-                message.setSubject(subject);
+                messageHelper.setTo(recipient.getEmail());
+                messageHelper.setFrom(emailFrom);
+                messageHelper.setSubject(subject);
 
-                Context context = new Context();
-                context.setVariable("recipient", recipient);
-                context.setVariable("ticket", ticket);
+                var context = new Context();
+                context.setVariable(RECIPIENT_CONTEXT_KEY, recipient);
+                context.setVariable(TICKET_CONTEXT_KEY, ticket);
 
-                String htmlContent = chooseTemplate(subject, context, recipients.size());
-                message.setText(htmlContent, true);
+                var htmlContent = chooseTemplate(subject, context, recipients.size());
+                messageHelper.setText(htmlContent, true);
 
                 mailSender.send(mimeMessage);
             }
@@ -86,12 +86,16 @@ public class MailServiceImpl implements MailService {
             case NEW_TICKET_SUBJECT -> htmlTemplateEngine.process(NEW_TICKET_MAIL_TEMPLATE_NAME, context);
             case TICKET_APPROVED_SUBJECT -> htmlTemplateEngine.process(APPROVED_TICKET_MAIL_TEMPLATE_NAME, context);
             case TICKET_DECLINED_SUBJECT -> htmlTemplateEngine.process(DECLINED_TICKET_MAIL_TEMPLATE_NAME, context);
-            case TICKET_CANCELLED_SUBJECT -> (recipientsNumber < 2)
+            case TICKET_CANCELLED_SUBJECT -> isOne(recipientsNumber)
                     ? htmlTemplateEngine.process(CANCELLED_BY_MANAGER_TICKET_MAIL_TEMPLATE_NAME, context)
                     : htmlTemplateEngine.process(CANCELLED_BY_ENGINEER_TICKET_MAIL_TEMPLATE_NAME, context);
             case TICKET_DONE_SUBJECT -> htmlTemplateEngine.process(DONE_TICKET_MAIL_TEMPLATE_NAME, context);
             case FEEDBACK_PROVIDED_SUBJECT -> htmlTemplateEngine.process(FEEDBACK_PROVIDED_MAIL_TEMPLATE_NAME, context);
             default -> throw new IllegalArgumentException(INCORRECT_SUBJECT_MSG);
         };
+    }
+
+    private boolean isOne(int value) {
+        return value == 1;
     }
 }

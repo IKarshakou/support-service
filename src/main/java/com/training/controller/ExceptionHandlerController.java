@@ -5,8 +5,7 @@ import com.training.exception.AttachmentUploadException;
 import com.training.exception.TicketNotAvailableException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +18,8 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
+@Slf4j
 public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
-
-    private static final Logger log = LoggerFactory.getLogger(ExceptionHandlerController.class);
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Object> entityNotFound(EntityNotFoundException ex, WebRequest request) {

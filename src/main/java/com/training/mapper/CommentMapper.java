@@ -5,7 +5,6 @@ import com.training.dto.comment.OutputCommentDto;
 import com.training.entity.Comment;
 import org.mapstruct.Mapper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Mapper(imports = {UserMapper.class})

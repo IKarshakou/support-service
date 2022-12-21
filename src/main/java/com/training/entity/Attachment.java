@@ -57,13 +57,12 @@ public class Attachment {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Attachment that = (Attachment) o;
-        return Objects.equals(id, that.id)
-                && Objects.equals(filePath, that.filePath)
+        return Objects.equals(filePath, that.filePath)
                 && Objects.equals(name, that.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, filePath, name);
+        return Objects.hash(filePath, name);
     }
 }

@@ -5,8 +5,7 @@ import com.training.dto.attachment.OutputAttachmentDto;
 import com.training.exception.AttachmentNotFoundException;
 import com.training.service.AttachmentService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -22,17 +21,17 @@ import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
+@Slf4j
 @RequiredArgsConstructor
 public class AttachmentController {
 
-    private static final Logger log = LoggerFactory.getLogger(AttachmentController.class);
-
-    private static final String IOEXCEPTION_MSG = "Cannot read attachment.\n {}";
+    private static final String IOEXCEPTION_MSG = "Cannot read attachment.";
+    private static final String HEADER_CONTENT_VALUE = "attachment; filename=";
 
     private final AttachmentService attachmentService;
 
     @GetMapping("/tickets/{id}/attachments")
-    public ResponseEntity<List<OutputAttachmentDto>> getAttachments(@PathVariable("id") Long ticketId) {
+    public ResponseEntity<List<OutputAttachmentDto>> getTicketAttachments(@PathVariable("id") Long ticketId) {
         return ResponseEntity.ok(attachmentService.getAttachments(ticketId));
     }
 
@@ -45,13 +44,13 @@ public class AttachmentController {
             resource = new ByteArrayResource(Files
                     .readAllBytes(Paths.get(attachment.getFilePath())));
         } catch (IOException ex) {
-            log.error(IOEXCEPTION_MSG, ex.getMessage());
+            log.error(IOEXCEPTION_MSG, ex);
             throw new AttachmentNotFoundException(ex);
         }
 
         return ResponseEntity
                 .ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + attachment.getName())
+                .header(HttpHeaders.CONTENT_DISPOSITION, HEADER_CONTENT_VALUE + attachment.getName())
                 .body(resource);
     }
 

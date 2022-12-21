@@ -5,6 +5,7 @@ import com.training.dto.comment.OutputCommentDto;
 import com.training.service.CommentService;
 import com.training.service.ErrorsHandlerService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tickets/{id}/comments")
+@Slf4j
 @RequiredArgsConstructor
 public class CommentController {
 

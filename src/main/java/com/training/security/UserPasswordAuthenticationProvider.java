@@ -1,10 +1,8 @@
 package com.training.security;
 
-import com.training.entity.User;
 import com.training.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,15 +13,15 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
-import java.util.Set;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class UserPasswordAuthenticationProvider implements AuthenticationProvider {
-
-    private static final Logger log = LoggerFactory.getLogger(UserPasswordAuthenticationProvider.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -37,16 +35,17 @@ public class UserPasswordAuthenticationProvider implements AuthenticationProvide
     private static final String USER_FOUND = "User [{}] found.";
 
     @Override
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        String email = authentication.getName();
-        String password = authentication.getCredentials().toString();
+        var email = authentication.getName();
+        var password = authentication.getCredentials().toString();
 
         if (email == null || email.isBlank() || password == null || password.isBlank()) {
             throw new BadCredentialsException(FIELDS_ARE_NOT_FILLED_MSG);
         }
 
         log.info(LOGIN_TO_SYSTEM_LOG, email);
-        User user = userRepository
+        var user = userRepository
                 .findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND_MSG.formatted(email)));
 
@@ -56,10 +55,10 @@ public class UserPasswordAuthenticationProvider implements AuthenticationProvide
         }
 
         log.info(USER_FOUND, email);
-        Set<GrantedAuthority> authorities = new HashSet<>();
+        var authorities = new HashSet<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority(ROLE_PREFIX + user.getRole().name()));
 
-        UserPrincipal userPrincipal = new UserPrincipal(user.getId(), user.getEmail(), authorities);
+        var userPrincipal = new UserPrincipal(user.getId(), user.getEmail(), authorities);
 
         return new UsernamePasswordAuthenticationToken(userPrincipal, null, authorities);
     }

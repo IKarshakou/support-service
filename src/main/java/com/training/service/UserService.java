@@ -13,7 +13,7 @@ public interface UserService {
 
     List<OutputUserDto> getAllUsers();
 
-    OutputUserDto addUser(InputUserDto inputUserDto);
+    void addUser(InputUserDto inputUserDto);
 
     void updateUser(UpdatedUserDto updatedUserDto);
 

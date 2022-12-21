@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
-    @Query("SELECT feedback FROM Feedback feedback WHERE feedback.ticket.id = :ticketId")
+    @Query("SELECT f FROM Feedback f WHERE f.ticket.id = :ticketId")
     Optional<Feedback> findByTicketId(Long ticketId);
 
     @Query("SELECT CASE WHEN COUNT(f) > 0 "

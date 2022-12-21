@@ -72,14 +72,13 @@ public class Feedback {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Feedback feedback = (Feedback) o;
-        return Objects.equals(id, feedback.id)
-                && Objects.equals(rate, feedback.rate)
+        return Objects.equals(rate, feedback.rate)
                 && Objects.equals(date, feedback.date)
                 && Objects.equals(text, feedback.text);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, rate, date, text);
+        return Objects.hash(rate, date, text);
     }
 }
