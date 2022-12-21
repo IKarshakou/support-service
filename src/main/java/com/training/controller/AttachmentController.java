@@ -26,6 +26,7 @@ import java.util.List;
 public class AttachmentController {
 
     private static final String IOEXCEPTION_MSG = "Cannot read attachment.";
+    private static final String HEADER_CONTENT_VALUE = "attachment; filename=";
 
     private final AttachmentService attachmentService;
 
@@ -49,7 +50,7 @@ public class AttachmentController {
 
         return ResponseEntity
                 .ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + attachment.getName())
+                .header(HttpHeaders.CONTENT_DISPOSITION, HEADER_CONTENT_VALUE + attachment.getName())
                 .body(resource);
     }
 

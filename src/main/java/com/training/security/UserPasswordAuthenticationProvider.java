@@ -13,6 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
@@ -34,7 +35,7 @@ public class UserPasswordAuthenticationProvider implements AuthenticationProvide
     private static final String USER_FOUND = "User [{}] found.";
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         var email = authentication.getName();
         var password = authentication.getCredentials().toString();

@@ -41,6 +41,9 @@ public class MailServiceImpl implements MailService {
     private static final String TICKET_DONE_SUBJECT = "Ticket was done";
     private static final String FEEDBACK_PROVIDED_SUBJECT = "Feedback was provided";
 
+    private static final String RECIPIENT_CONTEXT_KEY = "recipient";
+    private static final String TICKET_CONTEXT_KEY = "ticket";
+
     private final JavaMailSender mailSender;
     private final TemplateEngine htmlTemplateEngine;
 
@@ -64,8 +67,8 @@ public class MailServiceImpl implements MailService {
                 messageHelper.setSubject(subject);
 
                 var context = new Context();
-                context.setVariable("recipient", recipient);
-                context.setVariable("ticket", ticket);
+                context.setVariable(RECIPIENT_CONTEXT_KEY, recipient);
+                context.setVariable(TICKET_CONTEXT_KEY, ticket);
 
                 var htmlContent = chooseTemplate(subject, context, recipients.size());
                 messageHelper.setText(htmlContent, true);
@@ -83,12 +86,16 @@ public class MailServiceImpl implements MailService {
             case NEW_TICKET_SUBJECT -> htmlTemplateEngine.process(NEW_TICKET_MAIL_TEMPLATE_NAME, context);
             case TICKET_APPROVED_SUBJECT -> htmlTemplateEngine.process(APPROVED_TICKET_MAIL_TEMPLATE_NAME, context);
             case TICKET_DECLINED_SUBJECT -> htmlTemplateEngine.process(DECLINED_TICKET_MAIL_TEMPLATE_NAME, context);
-            case TICKET_CANCELLED_SUBJECT -> (recipientsNumber < 2)
+            case TICKET_CANCELLED_SUBJECT -> isOne(recipientsNumber)
                     ? htmlTemplateEngine.process(CANCELLED_BY_MANAGER_TICKET_MAIL_TEMPLATE_NAME, context)
                     : htmlTemplateEngine.process(CANCELLED_BY_ENGINEER_TICKET_MAIL_TEMPLATE_NAME, context);
             case TICKET_DONE_SUBJECT -> htmlTemplateEngine.process(DONE_TICKET_MAIL_TEMPLATE_NAME, context);
             case FEEDBACK_PROVIDED_SUBJECT -> htmlTemplateEngine.process(FEEDBACK_PROVIDED_MAIL_TEMPLATE_NAME, context);
             default -> throw new IllegalArgumentException(INCORRECT_SUBJECT_MSG);
         };
+    }
+
+    private boolean isOne(int value) {
+        return value == 1;
     }
 }

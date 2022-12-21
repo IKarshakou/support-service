@@ -19,6 +19,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,14 +60,14 @@ public class AttachmentServiceImpl implements AttachmentService, InitializingBea
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<OutputAttachmentDto> getAttachments(Long ticketId) {
         var attachmentList = attachmentRepository.getAttachmentsByTicketId(ticketId);
         return attachmentMapper.convertListToDto(attachmentList);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public AttachmentToDownloadDto getAttachmentToDownload(Long attachmentId) {
         var attachment = attachmentRepository
                 .findById(attachmentId)
