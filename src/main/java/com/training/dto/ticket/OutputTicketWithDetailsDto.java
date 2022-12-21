@@ -3,6 +3,8 @@ package com.training.dto.ticket;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.training.dto.attachment.OutputAttachmentDto;
 import com.training.dto.category.CategoryDto;
+import com.training.dto.comment.OutputCommentDto;
+import com.training.dto.history.OutputHistoryDto;
 import com.training.dto.user.OutputUserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,4 +34,6 @@ public class OutputTicketWithDetailsDto {
     private OutputUserDto approver;
     private OutputUserDto assignee;
     private List<OutputAttachmentDto> attachments;
+    private List<OutputCommentDto> comments;
+    private List<OutputHistoryDto> history;
 }

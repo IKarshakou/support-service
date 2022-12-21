@@ -67,14 +67,13 @@ public class History {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         History history = (History) o;
-        return Objects.equals(id, history.id)
-                && Objects.equals(date, history.date)
+        return Objects.equals(date, history.date)
                 && Objects.equals(action, history.action)
                 && Objects.equals(description, history.description);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, date, action, description);
+        return Objects.hash(date, action, description);
     }
 }

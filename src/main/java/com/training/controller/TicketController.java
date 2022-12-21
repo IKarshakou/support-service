@@ -7,6 +7,7 @@ import com.training.dto.ticket.OutputTicketWithDetailsDto;
 import com.training.service.ErrorsHandlerService;
 import com.training.service.TicketService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,6 +28,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tickets")
+@Slf4j
 @RequiredArgsConstructor
 public class TicketController {
 

@@ -21,12 +21,11 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity//(debug = true)
-@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
+@EnableMethodSecurity//(securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
 
-    private static final String LOGIN = "/users/login";
-    private static final String LOGOUT = "/users/logout";
-    private static final String CREATE_USER = "/users";
+    private static final String LOGOUT_PATH = "/logout";
+    private static final String NEW_USER_PATH = "/users";
     private static final String ALLOW_CROSS_ORIGIN_FOR = "http://localhost:[*]";
     private static final String ALL = "*";
     private static final Long HOUR_AGE = 3600L;
@@ -56,7 +55,7 @@ public class SecurityConfig {
                 .addFilterAfter(jwtTokenGeneratorFilter(), BasicAuthenticationFilter.class)
 
                 .authorizeHttpRequests()
-                .requestMatchers(HttpMethod.POST, LOGIN, LOGOUT, CREATE_USER).permitAll()
+                .requestMatchers(HttpMethod.POST, SecurityConstants.LOGIN_PATH, LOGOUT_PATH, NEW_USER_PATH).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .httpBasic();

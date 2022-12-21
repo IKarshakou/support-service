@@ -4,10 +4,8 @@ import com.training.entity.Ticket;
 import com.training.entity.User;
 import com.training.service.MailService;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -20,10 +18,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MailServiceImpl implements MailService {
-
-    private static final Logger log = LoggerFactory.getLogger(MailServiceImpl.class);
 
     private static final String MESSAGING_EXCEPTION_MSG = "Failed to send email.";
     private static final String INVALID_RECIPIENT_LIST_LOG = "Invalid recipient list, can't to send email.";
@@ -58,20 +55,20 @@ public class MailServiceImpl implements MailService {
         }
 
         try {
-            for (User recipient : recipients) {
-                MimeMessage mimeMessage = mailSender.createMimeMessage();
-                MimeMessageHelper message = new MimeMessageHelper(mimeMessage, StandardCharsets.UTF_8.name());
+            for (var recipient : recipients) {
+                var mimeMessage = mailSender.createMimeMessage();
+                var messageHelper = new MimeMessageHelper(mimeMessage, StandardCharsets.UTF_8.name());
 
-                message.setTo(recipient.getEmail());
-                message.setFrom(emailFrom);
-                message.setSubject(subject);
+                messageHelper.setTo(recipient.getEmail());
+                messageHelper.setFrom(emailFrom);
+                messageHelper.setSubject(subject);
 
-                Context context = new Context();
+                var context = new Context();
                 context.setVariable("recipient", recipient);
                 context.setVariable("ticket", ticket);
 
-                String htmlContent = chooseTemplate(subject, context, recipients.size());
-                message.setText(htmlContent, true);
+                var htmlContent = chooseTemplate(subject, context, recipients.size());
+                messageHelper.setText(htmlContent, true);
 
                 mailSender.send(mimeMessage);
             }

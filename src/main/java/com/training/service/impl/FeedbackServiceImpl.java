@@ -3,7 +3,6 @@ package com.training.service.impl;
 import com.training.dto.feedback.InputFeedbackDto;
 import com.training.dto.feedback.OutputFeedbackDto;
 import com.training.entity.Feedback;
-import com.training.entity.Ticket;
 import com.training.entity.User;
 import com.training.entity.enums.State;
 import com.training.exception.TicketNotAvailableException;
@@ -15,8 +14,7 @@ import com.training.service.FeedbackService;
 import com.training.service.MailService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,9 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class FeedbackServiceImpl implements FeedbackService {
-    private static final Logger log = LoggerFactory.getLogger(FeedbackServiceImpl.class);
 
     private static final String TICKET_NOT_FOUND_MSG = "Ticket not found.";
     private static final String NOT_ENOUGH_PERMISSIONS_MSG = "Insufficient permissions.";
@@ -42,17 +40,17 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     @Transactional
     public void addFeedback(Long ticketId, InputFeedbackDto inputFeedbackDto) {
-        Feedback feedback = feedbackMapper.convertToEntity(inputFeedbackDto);
-        Ticket ticket = ticketRepository
+        var feedback = feedbackMapper.convertToEntity(inputFeedbackDto);
+        var ticket = ticketRepository
                 .findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException(TICKET_NOT_FOUND_MSG));
 
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder
+        var userPrincipal = (UserPrincipal) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
 
-        User user = User.builder()
+        var user = User.builder()
                 .id(userPrincipal.getId())
                 .build();
 
@@ -74,12 +72,12 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     @Transactional(readOnly = true)
     public OutputFeedbackDto getFeedback(Long ticketId) {
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder
+        var userPrincipal = (UserPrincipal) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
 
-        Ticket ticket = ticketRepository
+        var ticket = ticketRepository
                 .findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException(TICKET_NOT_FOUND_MSG));
 

@@ -4,8 +4,6 @@ import com.training.dto.ticket.InputDraftTicketDto;
 import com.training.dto.ticket.InputTicketDto;
 import com.training.dto.ticket.OutputTicketDto;
 import com.training.dto.ticket.OutputTicketWithDetailsDto;
-import com.training.entity.Category;
-import com.training.entity.Comment;
 import com.training.entity.History;
 import com.training.entity.Ticket;
 import com.training.entity.User;
@@ -23,8 +21,7 @@ import com.training.service.MailService;
 import com.training.service.TicketService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,10 +33,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
-
-    private static final Logger log = LoggerFactory.getLogger(TicketServiceImpl.class);
 
     private static final String NO_TICKETS_MSG = "No tickets.";
     private static final String TICKET_NOT_FOUND_MSG = "Ticket not found.";
@@ -70,20 +66,20 @@ public class TicketServiceImpl implements TicketService {
     @Override
     @Transactional(readOnly = true)
     public List<OutputTicketDto> findAll() {
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder
+        var userPrincipal = (UserPrincipal) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
 
-        List<String> authorities = userPrincipal.getAuthorities()
+        var authoritiesList = userPrincipal.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
         List<Ticket> tickets;
-        if (authorities.contains(ROLE_PREFIX + Role.EMPLOYEE.name())) {
+        if (authoritiesList.contains(ROLE_PREFIX + Role.EMPLOYEE.name())) {
             tickets = ticketRepository.findAllByEmployee(userPrincipal.getId());
-        } else if (authorities.contains(ROLE_PREFIX + Role.MANAGER.name())) {
+        } else if (authoritiesList.contains(ROLE_PREFIX + Role.MANAGER.name())) {
             tickets = ticketRepository.findAllByManager(userPrincipal.getId(), List.of(
                     State.APPROVED,
                     State.DECLINED,
@@ -112,7 +108,7 @@ public class TicketServiceImpl implements TicketService {
     @Override
     @Transactional
     public void changeState(Long id, String inputAction) {
-        Ticket ticket = ticketRepository
+        var ticket = ticketRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(TICKET_NOT_FOUND_MSG));
 
@@ -123,7 +119,7 @@ public class TicketServiceImpl implements TicketService {
             throw new IllegalArgumentException(INCORRECT_ACTION_MSG);
         }
 
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder
+        var userPrincipal = (UserPrincipal) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
@@ -142,7 +138,7 @@ public class TicketServiceImpl implements TicketService {
     @Override
     @Transactional
     public OutputTicketDto createNewTicket(InputTicketDto inputTicketDto, List<MultipartFile> attachments) {
-        Ticket ticket = ticketMapper.convertToEntity(inputTicketDto, List.of(inputTicketDto.getComment()));
+        var ticket = ticketMapper.convertToEntity(inputTicketDto, List.of(inputTicketDto.getComment()));
         ticket.setState(State.NEW);
 
         return saveTicketToDatabase(ticket, attachments);
@@ -151,23 +147,23 @@ public class TicketServiceImpl implements TicketService {
     @Override
     @Transactional
     public OutputTicketDto saveTicketAsDraft(InputDraftTicketDto inputTicketDto, List<MultipartFile> attachments) {
-        Ticket ticket = ticketMapper.convertDraftToEntity(inputTicketDto, List.of(inputTicketDto.getComment()));
+        var ticket = ticketMapper.convertDraftToEntity(inputTicketDto, List.of(inputTicketDto.getComment()));
         ticket.setState(State.DRAFT);
 
         return saveTicketToDatabase(ticket, attachments);
     }
 
     private OutputTicketDto saveTicketToDatabase(Ticket ticket, List<MultipartFile> attachments) {
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder
+        var userPrincipal = (UserPrincipal) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
 
-        User user = User.builder()
+        var user = User.builder()
                 .id(userPrincipal.getId())
                 .build();
 
-        Category category = categoryRepository
+        var category = categoryRepository
                 .findByName(ticket.getCategory().getName())
                 .orElseThrow(() -> new EntityNotFoundException(CATEGORY_NOT_FOUND_MSG));
 
@@ -175,7 +171,7 @@ public class TicketServiceImpl implements TicketService {
         handleTicketComment(ticket, user);
 
         if (ticket.getId() != null) {
-            Ticket ticketFromDatabase = ticketRepository
+            var ticketFromDatabase = ticketRepository
                     .findById(ticket.getId())
                     .orElseThrow(() -> new EntityNotFoundException(TICKET_NOT_FOUND_MSG));
 
@@ -203,7 +199,7 @@ public class TicketServiceImpl implements TicketService {
 
     private void handleTicketComment(Ticket ticket, User user) {
         if (!ticket.getComments().isEmpty()) {
-            Comment comment = ticket.getComments().get(ticket.getComments().size() - 1);
+            var comment = ticket.getComments().get(ticket.getComments().size() - 1);
             if (!comment.getText().isBlank()) {
                 comment.setUser(user);
                 comment.setTicket(ticket);
@@ -214,7 +210,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     private void addCreationHistoryToTicket(Ticket ticket, User user) {
-        History ticketCreatedHistory = History.builder()
+        var ticketCreatedHistory = History.builder()
                 .ticket(ticket)
                 .action(TICKET_CREATED_ACTION)
                 .description(TICKET_CREATED_ACTION)
@@ -224,7 +220,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     private void addEditionHistoryToTicket(Ticket ticket, Ticket ticketFromDatabase, User user) {
-        History ticketEditedHistory = History.builder()
+        var ticketEditedHistory = History.builder()
                 .ticket(ticket)
                 .action(TICKET_EDITED_ACTION)
                 .description(TICKET_EDITED_ACTION)
@@ -233,7 +229,7 @@ public class TicketServiceImpl implements TicketService {
         ticket.getHistory().add(ticketEditedHistory);
 
         if (isNew(ticket)) {
-            History ticketStateHistory = History.builder()
+            var ticketStateHistory = History.builder()
                     .ticket(ticket)
                     .action(TICKET_STATUS_CHANGED_ACTION)
                     .description(TICKET_STATUS_CHANGED_DESCRIPTION.formatted(
@@ -249,9 +245,9 @@ public class TicketServiceImpl implements TicketService {
         if ((userIsManager(userPrincipal) && isNew(ticket))
                 && (employeeIsOwner(ticket) || userIsOwner(userPrincipal, ticket))) {
 
-            User approver = User.builder().id(userPrincipal.getId()).build();
+            var approver = User.builder().id(userPrincipal.getId()).build();
 
-            History ticketStateHistory = History.builder()
+            var ticketStateHistory = History.builder()
                     .user(approver)
                     .ticket(ticket)
                     .action(TICKET_STATUS_CHANGED_ACTION)
@@ -275,7 +271,7 @@ public class TicketServiceImpl implements TicketService {
         if ((userIsManager(userPrincipal) && isNew(ticket))
                 && (employeeIsOwner(ticket) || userIsOwner(userPrincipal, ticket))) {
 
-            History ticketStateHistory = History.builder()
+            var ticketStateHistory = History.builder()
                     .user(User.builder().id(userPrincipal.getId()).build())
                     .ticket(ticket)
                     .action(TICKET_STATUS_CHANGED_ACTION)
@@ -305,7 +301,7 @@ public class TicketServiceImpl implements TicketService {
                 || (userIsEngineer(userPrincipal)
                 && ticket.getState().equals(State.APPROVED))) {
 
-            History ticketStateHistory = History.builder()
+            var ticketStateHistory = History.builder()
                     .user(User.builder().id(userPrincipal.getId()).build())
                     .ticket(ticket)
                     .action(TICKET_STATUS_CHANGED_ACTION)
@@ -313,7 +309,7 @@ public class TicketServiceImpl implements TicketService {
                             ticket.getState().name(),
                             State.CANCELED.name()))
                     .build();
-            State previousState = ticket.getState();
+            var previousState = ticket.getState();
             ticket.setState(State.CANCELED);
             ticket.getHistory().add(ticketStateHistory);
 
@@ -334,9 +330,9 @@ public class TicketServiceImpl implements TicketService {
 
     private void assignTicket(Ticket ticket, UserPrincipal userPrincipal) {
         if (userIsEngineer(userPrincipal) && ticket.getState().equals(State.APPROVED)) {
-            User assignedUser = User.builder().id(userPrincipal.getId()).build();
+            var assignedUser = User.builder().id(userPrincipal.getId()).build();
 
-            History ticketStateHistory = History.builder()
+            var ticketStateHistory = History.builder()
                     .user(assignedUser)
                     .ticket(ticket)
                     .action(TICKET_STATUS_CHANGED_ACTION)
@@ -354,7 +350,7 @@ public class TicketServiceImpl implements TicketService {
 
     private void doneTicket(Ticket ticket, UserPrincipal userPrincipal) {
         if (userIsEngineer(userPrincipal) && ticket.getState().equals(State.IN_PROGRESS)) {
-            History ticketChangeStateHistory = History.builder()
+            var ticketChangeStateHistory = History.builder()
                     .user(User.builder().id(userPrincipal.getId()).build())
                     .ticket(ticket)
                     .action(TICKET_STATUS_CHANGED_ACTION)
@@ -372,12 +368,12 @@ public class TicketServiceImpl implements TicketService {
     }
 
     private boolean userIsManager(UserPrincipal userPrincipal) {
-        SimpleGrantedAuthority requiredAuthority = new SimpleGrantedAuthority(ROLE_PREFIX + Role.MANAGER);
+        var requiredAuthority = new SimpleGrantedAuthority(ROLE_PREFIX + Role.MANAGER);
         return userPrincipal.getAuthorities().contains(requiredAuthority);
     }
 
     private boolean userIsEngineer(UserPrincipal userPrincipal) {
-        SimpleGrantedAuthority requiredAuthority = new SimpleGrantedAuthority(ROLE_PREFIX + Role.ENGINEER);
+        var requiredAuthority = new SimpleGrantedAuthority(ROLE_PREFIX + Role.ENGINEER);
         return userPrincipal.getAuthorities().contains(requiredAuthority);
     }
 

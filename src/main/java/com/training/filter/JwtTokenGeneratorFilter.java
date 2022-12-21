@@ -8,30 +8,24 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Set;
 
+@Slf4j
 public class JwtTokenGeneratorFilter extends OncePerRequestFilter {
-
-    private static final Logger log = LoggerFactory.getLogger(JwtTokenGeneratorFilter.class);
 
     private static final String ISSUER = "Some Application";
     private static final String SUBJECT = "JWT Token";
     private static final String AUTHENTICATION_LOG = "User {} is successfully authenticated and has the authorities {}";
-    private static final String LOGIN_PATH = "/users/login";
     private static final String AUTHORITIES_DELIMITER = ",";
 
     @Value("${spring.jwt.token.secret}")
@@ -44,20 +38,20 @@ public class JwtTokenGeneratorFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
-            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-            SecretKey secretKey = Keys.hmacShaKeyFor(jwtKey.getBytes(StandardCharsets.UTF_8));
-            Date now = new Date();
+            var userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            var secretKey = Keys.hmacShaKeyFor(jwtKey.getBytes(StandardCharsets.UTF_8));
+            var nowDate = new Date();
 
-            String jwtToken = Jwts.builder()
+            var jwtToken = Jwts.builder()
                     .setIssuer(ISSUER)
                     .setSubject(SUBJECT)
                     .claim(SecurityConstants.ID_NAME, userPrincipal.getId())
                     .claim(SecurityConstants.EMAIL_NAME, userPrincipal.getEmail())
                     .claim(SecurityConstants.AUTHORITIES_NAME, populateAuthorities(userPrincipal.getAuthorities()))
-                    .setIssuedAt(now)
-                    .setExpiration(new Date(now.getTime() + expirationTime))
+                    .setIssuedAt(nowDate)
+                    .setExpiration(new Date(nowDate.getTime() + expirationTime))
                     .signWith(secretKey)
                     .compact();
 
@@ -71,13 +65,13 @@ public class JwtTokenGeneratorFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getServletPath().equals(LOGIN_PATH);
+        return !request.getServletPath().equals(SecurityConstants.LOGIN_PATH);
     }
 
     private String populateAuthorities(Collection<? extends GrantedAuthority> collection) {
-        Set<String> authoritiesSet = new HashSet<>();
+        var authoritiesSet = new HashSet<String>();
 
-        for (GrantedAuthority authority : collection) {
+        for (var authority : collection) {
             authoritiesSet.add(authority.getAuthority());
         }
 

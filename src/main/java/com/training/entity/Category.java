@@ -49,12 +49,11 @@ public class Category {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Category category = (Category) o;
-        return Objects.equals(id, category.id)
-                && Objects.equals(name, category.name);
+        return Objects.equals(name, category.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name);
+        return Objects.hash(name);
     }
 }

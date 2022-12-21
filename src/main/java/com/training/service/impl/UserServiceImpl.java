@@ -3,15 +3,13 @@ package com.training.service.impl;
 import com.training.dto.user.InputUserDto;
 import com.training.dto.user.OutputUserDto;
 import com.training.dto.user.UpdatedUserDto;
-import com.training.entity.User;
 import com.training.mapper.UserMapper;
 import com.training.repository.UserRepository;
 import com.training.service.UserService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-
-    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private static final String USER_NOT_FOUND_MSG = "User not found.";
     private static final String USER_IS_ALREADY_EXISTS_MSG = "User with email [%s] already exists.";
@@ -35,6 +32,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public OutputUserDto getUserById(Long id) {
         log.info("Getting User by ID = [{}]", id);
+
         return userMapper.convertToDto(userRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MSG)));
@@ -53,10 +51,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<OutputUserDto> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        log.info("Getting all Users. Result is empty = [{}]", users.isEmpty());
+        var userList = userRepository.findAll();
+        log.info("Getting all Users. Result is empty = [{}]", userList.isEmpty());
 
-        return users
+        return userList
                 .stream()
                 .map(userMapper::convertToDto)
                 .toList();
@@ -64,8 +62,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public OutputUserDto addUser(InputUserDto inputUserDto) {
-        User user = userMapper.convertToEntity(inputUserDto);
+    public void addUser(InputUserDto inputUserDto) {
+        var user = userMapper.convertToEntity(inputUserDto);
         log.info("Adding User to database: [{}].", user);
 
         if (userRepository.isUserExistsByEmail(user.getEmail())) {
@@ -73,13 +71,13 @@ public class UserServiceImpl implements UserService {
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        return userMapper.convertToDto(userRepository.save(user));
+        userRepository.save(user);
     }
 
     @Override
     @Transactional
     public void updateUser(UpdatedUserDto updatedUserDto) {
-        User user = userMapper.convertUpdatedToEntity(updatedUserDto);
+        var user = userMapper.convertUpdatedToEntity(updatedUserDto);
         log.info("Updating User with ID = [{}].", user.getId());
 
         if (userRepository.existsById(user.getId())) {

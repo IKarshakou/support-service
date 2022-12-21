@@ -1,12 +1,13 @@
 package com.training.controller;
 
+import com.training.constants.SecurityConstants;
 import com.training.dto.user.InputUserDto;
 import com.training.dto.user.OutputUserDto;
 import com.training.dto.user.UpdatedUserDto;
 import com.training.service.ErrorsHandlerService;
 import com.training.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
@@ -20,31 +21,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
-import java.security.Principal;
 import java.util.List;
 
 @RestController
 @RequestMapping("/users")
+@Slf4j
 @RequiredArgsConstructor
 public class UserController {
 
-    private static final String REDIRECT_TO_LOGIN_PAGE = "/login";
-
     private final UserService userService;
     private final ErrorsHandlerService errorsHandlerService;
-
-    @PostMapping("/login")
-    public ResponseEntity<OutputUserDto> login(Principal principal) {
-        return ResponseEntity.ok(userService.getUserByEmail(principal.getName()));
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
-        return ResponseEntity
-                .status(HttpStatus.SEE_OTHER)
-                .location(URI.create(REDIRECT_TO_LOGIN_PAGE))
-                .build();
-    }
 
     @GetMapping
     public ResponseEntity<List<OutputUserDto>> getUsers() {
@@ -61,7 +47,7 @@ public class UserController {
         errorsHandlerService.checkErrors(errors);
 
         userService.addUser(inputUserDto);
-        URI location = URI.create(REDIRECT_TO_LOGIN_PAGE);
+        var location = URI.create(SecurityConstants.LOGIN_PATH);
         return ResponseEntity.created(location).build();
     }
 

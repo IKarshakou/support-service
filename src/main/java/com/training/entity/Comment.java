@@ -65,13 +65,12 @@ public class Comment {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Comment comment = (Comment) o;
-        return Objects.equals(id, comment.id)
-                && Objects.equals(text, comment.text)
+        return Objects.equals(text, comment.text)
                 && Objects.equals(creationDate, comment.creationDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, text, creationDate);
+        return Objects.hash(text, creationDate);
     }
 }

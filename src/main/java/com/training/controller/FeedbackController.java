@@ -5,6 +5,7 @@ import com.training.dto.feedback.OutputFeedbackDto;
 import com.training.service.ErrorsHandlerService;
 import com.training.service.FeedbackService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.Errors;
@@ -20,6 +21,7 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/tickets/{id}/feedbacks")
+@Slf4j
 @RequiredArgsConstructor
 public class FeedbackController {
 

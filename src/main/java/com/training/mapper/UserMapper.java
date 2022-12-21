@@ -8,6 +8,8 @@ import com.training.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
+
 @Mapper(imports = Role.class)
 public interface UserMapper {
 
@@ -18,9 +20,9 @@ public interface UserMapper {
 
     User convertUpdatedToEntity(UpdatedUserDto updatedUserDto);
 
+    List<OutputUserDto> convertListToDto(List<User> users);
+
     default Role getEmployeeRole() {
         return Role.EMPLOYEE;
     }
-
-//    List<UserDto> convertListToDto(List<User> users);
 }
