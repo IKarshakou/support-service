@@ -6,7 +6,6 @@
 </head>
 <body>
 <div class="contentContainer">
-    <h2 th:text="|Ticket was done|"></h2>
     <p th:text="|Dear ${recipient.getFirstName()} ${recipient.getLastName()},|"></p>
     <p></p>
     <p>Ticket [<a th:href="@{~/client-app/{id}/TicketOverview(id=${ticket.getId()})}" th:text="${ticket.getName()}"></a>] was done by the Engineer.</p>
