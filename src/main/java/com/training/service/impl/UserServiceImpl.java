@@ -3,13 +3,16 @@ package com.training.service.impl;
 import com.training.dto.user.InputUserDto;
 import com.training.dto.user.OutputUserDto;
 import com.training.dto.user.UpdatedUserDto;
+import com.training.entity.User;
 import com.training.mapper.UserMapper;
 import com.training.repository.UserRepository;
+import com.training.security.UserPrincipal;
 import com.training.service.UserService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -87,14 +90,23 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void updateUser(UpdatedUserDto updatedUserDto) {
-        var user = userMapper.convertUpdatedToEntity(updatedUserDto);
-        log.info(UPDATE_USER_LOG, user.getId());
+        var userPrincipal = (UserPrincipal) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        log.info(UPDATE_USER_LOG, userPrincipal.getId());
 
-        if (userRepository.existsById(user.getId())) {
-            userRepository.save(user);
-        } else {
-            log.info(USER_NOT_FOUND_LOG, user.getId());
-            throw new EntityNotFoundException(USER_NOT_FOUND_MSG);
+        var user = userRepository
+                .findById(userPrincipal.getId())
+                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MSG));
+        if (updatedUserDto.getFirstName() != null) {
+            user.setFirstName(updatedUserDto.getFirstName());
+        }
+        if (updatedUserDto.getLastName() != null) {
+            user.setLastName(updatedUserDto.getLastName());
+        }
+        if (updatedUserDto.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(updatedUserDto.getPassword()));
         }
     }
 
