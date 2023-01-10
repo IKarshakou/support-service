@@ -17,6 +17,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,10 +29,10 @@ import java.util.Objects;
 public class Attachment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "attachment_id",
             updatable = false)
-    private Long id;
+    private UUID id;
 
     @ToString.Exclude
     @Setter

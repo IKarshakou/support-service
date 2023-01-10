@@ -6,10 +6,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface AttachmentRepository extends JpaRepository<Attachment, Long> {
+public interface AttachmentRepository extends JpaRepository<Attachment, UUID> {
 
-    @Query("SELECT a FROM Attachment a WHERE a.ticket.id = :ticketId")
-    List<Attachment> getAttachmentsByTicketId(Long ticketId);
+    List<Attachment> getAttachmentsByTicketId(UUID ticketId);
 }

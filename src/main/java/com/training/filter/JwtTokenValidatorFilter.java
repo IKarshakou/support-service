@@ -1,5 +1,6 @@
 package com.training.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.training.constants.SecurityConstants;
 import com.training.security.UserPrincipal;
 import io.jsonwebtoken.Jwts;
@@ -10,7 +11,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,12 +21,16 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 
-    private static final String INVALID_TOKEN_MSG = "Invalid Token received.";
+    private static final String BEARER = "Bearer ";
+    private static final String VALIDATION_EXCEPTION_LOG = "Error validation token: {}";
+    private static final String ERROR_MESSAGE_KEY = "error_message";
 
     @Value("${spring.jwt.token.secret}")
     private String jwtKey;
@@ -32,20 +39,21 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        var authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         try {
-            var jwtToken = request.getHeader(SecurityConstants.JWT_HEADER);
+            if (authorizationHeader != null && authorizationHeader.startsWith(BEARER)) {
 
-            if (jwtToken != null) {
+                var accessToken = authorizationHeader.substring(BEARER.length());
                 var secretKey = Keys.hmacShaKeyFor(jwtKey.getBytes(StandardCharsets.UTF_8));
 
                 var claims = Jwts.parserBuilder()
                         .setSigningKey(secretKey)
                         .build()
-                        .parseClaimsJws(jwtToken)
+                        .parseClaimsJws(accessToken)
                         .getBody();
 
-                var id = Long.valueOf(claims.get(SecurityConstants.ID_NAME).toString());
+                var id = UUID.fromString(claims.get(SecurityConstants.ID_NAME).toString());
                 var email = String.valueOf(claims.get(SecurityConstants.EMAIL_NAME));
                 var authorities = String.valueOf(claims.get(SecurityConstants.AUTHORITIES_NAME));
 
@@ -57,10 +65,15 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
                         userPrincipal, null, authoritiesSet);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+            filterChain.doFilter(request, response);
         } catch (Exception ex) {
-            throw new BadCredentialsException(INVALID_TOKEN_MSG);
+            log.error(VALIDATION_EXCEPTION_LOG, ex.getMessage());
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            var errorMap = new HashMap<>();
+            errorMap.put(ERROR_MESSAGE_KEY, ex.getMessage());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            new ObjectMapper().writeValue(response.getOutputStream(), errorMap);
         }
-        filterChain.doFilter(request, response);
     }
 
     @Override

@@ -22,19 +22,22 @@ import com.training.service.TicketService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
 
@@ -65,42 +68,46 @@ public class TicketServiceImpl implements TicketService {
     private final TicketMapper ticketMapper;
 
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-    public List<OutputTicketDto> findAll() {
+    @Transactional(readOnly = true)
+    public List<OutputTicketDto> findAll(int page, int size, String sort) {
         var userPrincipal = (UserPrincipal) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
 
-        var authoritiesList = userPrincipal.getAuthorities()
+        var authoritiesSet = userPrincipal.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
-                .toList();
+                .collect(Collectors.toSet());
 
-        List<Ticket> tickets;
-        if (authoritiesList.contains(ROLE_PREFIX + Role.EMPLOYEE.name())) {
-            tickets = ticketRepository.findAllByEmployee(userPrincipal.getId());
-        } else if (authoritiesList.contains(ROLE_PREFIX + Role.MANAGER.name())) {
-            tickets = ticketRepository.findAllByManager(userPrincipal.getId(), List.of(
-                    State.APPROVED,
-                    State.DECLINED,
-                    State.CANCELED,
-                    State.IN_PROGRESS,
-                    State.DONE));
+        Page<Ticket> tickets;
+        var pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
+        if (authoritiesSet.contains(ROLE_PREFIX + Role.EMPLOYEE.name())) {
+            tickets = ticketRepository.findAllByEmployee(userPrincipal.getId(), pageable);
+        } else if (authoritiesSet.contains(ROLE_PREFIX + Role.MANAGER.name())) {
+            tickets = ticketRepository.findAllByManager(
+                    userPrincipal.getId(),
+                    List.of(
+                            State.APPROVED,
+                            State.DECLINED,
+                            State.CANCELED,
+                            State.IN_PROGRESS,
+                            State.DONE),
+                    pageable);
         } else {
-            tickets = ticketRepository.findAllByEngineer(userPrincipal.getId());
+            tickets = ticketRepository.findAllByEngineer(userPrincipal.getId(), pageable);
         }
 
         if (tickets.isEmpty()) {
             throw new EntityNotFoundException(NO_TICKETS_MSG);
         }
 
-        return ticketMapper.convertListToDto(tickets);
+        return tickets.map(ticketMapper::convertToDto).getContent();
     }
 
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-    public OutputTicketWithDetailsDto findById(Long id) {
+    @Transactional(readOnly = true)
+    public OutputTicketWithDetailsDto findById(UUID id) {
         return ticketMapper.convertToTicketWithDetailsDto(ticketRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(TICKET_NOT_FOUND_MSG)));
@@ -108,7 +115,7 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     @Transactional
-    public void changeState(Long id, String inputAction) {
+    public void changeState(UUID id, String inputAction) {
         var ticket = ticketRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(TICKET_NOT_FOUND_MSG));

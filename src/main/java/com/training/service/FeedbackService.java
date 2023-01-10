@@ -3,9 +3,11 @@ package com.training.service;
 import com.training.dto.feedback.InputFeedbackDto;
 import com.training.dto.feedback.OutputFeedbackDto;
 
+import java.util.UUID;
+
 public interface FeedbackService {
 
-    void addFeedback(Long ticketId, InputFeedbackDto inputFeedbackDto);
+    void addFeedback(UUID ticketId, InputFeedbackDto inputFeedbackDto);
 
-    OutputFeedbackDto getFeedback(Long ticketId);
+    OutputFeedbackDto getFeedback(UUID ticketId);
 }

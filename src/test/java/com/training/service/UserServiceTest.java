@@ -60,7 +60,7 @@ class UserServiceTest {
     void testAddUser() {
         // when
         when(userMapper.convertToEntity(inputUserDto)).thenReturn(user);
-        when(userRepository.isUserExistsByEmail(EMAIL)).thenReturn(false);
+        when(userRepository.existsUserByEmail(EMAIL)).thenReturn(false);
 
         userService.addUser(inputUserDto);
 

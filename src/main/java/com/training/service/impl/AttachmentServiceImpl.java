@@ -14,12 +14,10 @@ import com.training.security.UserPrincipal;
 import com.training.service.AttachmentService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,7 +31,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class AttachmentServiceImpl implements AttachmentService, InitializingBean {
 
@@ -60,15 +57,15 @@ public class AttachmentServiceImpl implements AttachmentService, InitializingBea
     }
 
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-    public List<OutputAttachmentDto> getAttachments(Long ticketId) {
+    @Transactional(readOnly = true)
+    public List<OutputAttachmentDto> getAttachments(UUID ticketId) {
         var attachmentList = attachmentRepository.getAttachmentsByTicketId(ticketId);
         return attachmentMapper.convertListToDto(attachmentList);
     }
 
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-    public AttachmentToDownloadDto getAttachmentToDownload(Long attachmentId) {
+    @Transactional(readOnly = true)
+    public AttachmentToDownloadDto getAttachmentToDownload(UUID attachmentId) {
         var attachment = attachmentRepository
                 .findById(attachmentId)
                 .orElseThrow(() -> new EntityNotFoundException(ATTACHMENT_NOT_FOUND_MSG));
@@ -91,7 +88,6 @@ public class AttachmentServiceImpl implements AttachmentService, InitializingBea
                     try {
                         file.transferTo(uploadRootPath.resolve(resultFilename));
                     } catch (IOException ex) {
-                        log.error(ex.getMessage());
                         throw new AttachmentUploadException(ex);
                     }
 
@@ -111,7 +107,7 @@ public class AttachmentServiceImpl implements AttachmentService, InitializingBea
 
     @Override
     @Transactional
-    public void deleteAttachment(Long attachmentId) {
+    public void deleteAttachment(UUID attachmentId) {
         var attachment = attachmentRepository
                 .findById(attachmentId)
                 .orElseThrow(() -> new EntityNotFoundException(ATTACHMENT_NOT_FOUND_MSG));
@@ -120,8 +116,7 @@ public class AttachmentServiceImpl implements AttachmentService, InitializingBea
             Files.deleteIfExists(Paths.get(attachment.getFilePath()));
             addAttachRemovalHistoryToTicket(attachment.getTicket(), attachment.getName());
         } catch (IOException ex) {
-            log.error(CANNOT_DELETE_ATTACHMENT_LOG, ex);
-            throw new AttachmentNotFoundException(ex);
+            throw new AttachmentNotFoundException(CANNOT_DELETE_ATTACHMENT_LOG, ex);
         }
 
         attachmentRepository.delete(attachment);

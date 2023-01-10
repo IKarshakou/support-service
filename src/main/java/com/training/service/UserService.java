@@ -5,9 +5,10 @@ import com.training.dto.user.OutputUserDto;
 import com.training.dto.user.UpdatedUserDto;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface UserService {
-    OutputUserDto getUserById(Long id);
+    OutputUserDto getUserById(UUID id);
 
     OutputUserDto getUserByEmail(String email);
 
@@ -17,5 +18,5 @@ public interface UserService {
 
     void updateUser(UpdatedUserDto updatedUserDto);
 
-    void removeUser(Long id);
+    void removeUser(UUID id);
 }

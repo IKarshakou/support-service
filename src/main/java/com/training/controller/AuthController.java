@@ -14,7 +14,6 @@ import java.net.URI;
 import java.security.Principal;
 
 @RestController
-@Slf4j
 @RequiredArgsConstructor
 public class AuthController {
 

@@ -13,13 +13,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
@@ -31,9 +30,9 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
 
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-    public List<OutputCommentDto> findAllByTicketId(Long id) {
-        var commentList = commentRepository.findAllByTicketId(id);
+    @Transactional(readOnly = true)
+    public List<OutputCommentDto> findAllByTicketId(UUID ticketId) {
+        var commentList = commentRepository.findAllByTicketId(ticketId);
 
         if (commentList.isEmpty()) {
             throw new EntityNotFoundException(COMMENTS_NOT_FOUND_MSG);
@@ -44,7 +43,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public OutputCommentDto addCommentToTicket(Long ticketId, InputCommentDto inputCommentDto) {
+    public OutputCommentDto addCommentToTicket(UUID ticketId, InputCommentDto inputCommentDto) {
         var userPrincipal = (UserPrincipal) SecurityContextHolder
                 .getContext()
                 .getAuthentication()

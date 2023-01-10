@@ -7,13 +7,12 @@ import com.training.service.HistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class HistoryServiceImpl implements HistoryService {
 
@@ -21,9 +20,9 @@ public class HistoryServiceImpl implements HistoryService {
     private final HistoryMapper historyMapper;
 
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-    public List<OutputHistoryDto> findAllByTicketId(Long ticketId) {
-        var historyList = historyRepository.findAllByTicketId(ticketId);
+    @Transactional(readOnly = true)
+    public List<OutputHistoryDto> findAllByTicketId(UUID ticketId) {
+        var historyList = historyRepository.findAllByTicketIdOrderByDateDesc(ticketId);
         return historyList
                 .stream()
                 .map(historyMapper::convertToDto)

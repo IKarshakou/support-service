@@ -5,7 +5,6 @@ import com.training.dto.attachment.OutputAttachmentDto;
 import com.training.exception.AttachmentNotFoundException;
 import com.training.service.AttachmentService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -19,9 +18,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
-@Slf4j
 @RequiredArgsConstructor
 public class AttachmentController {
 
@@ -31,12 +30,12 @@ public class AttachmentController {
     private final AttachmentService attachmentService;
 
     @GetMapping("/tickets/{id}/attachments")
-    public ResponseEntity<List<OutputAttachmentDto>> getTicketAttachments(@PathVariable("id") Long ticketId) {
+    public ResponseEntity<List<OutputAttachmentDto>> getTicketAttachments(@PathVariable("id") UUID ticketId) {
         return ResponseEntity.ok(attachmentService.getAttachments(ticketId));
     }
 
     @GetMapping("/attachments/{id}")
-    public ResponseEntity<Resource> downloadAttachment(@PathVariable("id") Long attachmentId) {
+    public ResponseEntity<Resource> downloadAttachment(@PathVariable("id") UUID attachmentId) {
         AttachmentToDownloadDto attachment = attachmentService.getAttachmentToDownload(attachmentId);
 
         ByteArrayResource resource;
@@ -44,8 +43,7 @@ public class AttachmentController {
             resource = new ByteArrayResource(Files
                     .readAllBytes(Paths.get(attachment.getFilePath())));
         } catch (IOException ex) {
-            log.error(IOEXCEPTION_MSG, ex);
-            throw new AttachmentNotFoundException(ex);
+            throw new AttachmentNotFoundException(IOEXCEPTION_MSG, ex);
         }
 
         return ResponseEntity
@@ -55,7 +53,7 @@ public class AttachmentController {
     }
 
     @DeleteMapping("/attachments/{id}")
-    public ResponseEntity<Void> deleteAttachment(@PathVariable("id") Long attachmentId) {
+    public ResponseEntity<Void> deleteAttachment(@PathVariable("id") UUID attachmentId) {
         attachmentService.deleteAttachment(attachmentId);
         return ResponseEntity.noContent().build();
     }

@@ -20,6 +20,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -31,10 +32,10 @@ import java.util.Objects;
 public class Feedback {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "feedback_id",
             updatable = false)
-    private Long id;
+    private UUID id;
 
     @ToString.Exclude
     @Setter

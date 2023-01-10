@@ -10,14 +10,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @Builder
+@ToString
 public class InputTicketDto {
 
     private static final String TEXT_PATTERN = "[0-9a-zA-Z~.\\\"(),:;<>@\\[\\]!#$%&'*+-/=?^_`{|} ]{0,500}";
@@ -33,7 +36,7 @@ public class InputTicketDto {
     private static final String URGENCY_NOT_NULL_VALIDATION_MSG = "The 'urgency' field is missing.";
     private static final String DESIRED_RESOLUTION_DATE_VALIDATION_MSG = "Desired date cannot contain past date.";
 
-    private Long id;
+    private UUID id;
 
     @NotNull(message = CATEGORY_VALIDATION_MSG)
     private CategoryDto category;
