@@ -3,7 +3,7 @@ package com.training.controller;
 import com.training.dto.comment.InputCommentDto;
 import com.training.dto.comment.OutputCommentDto;
 import com.training.service.CommentService;
-import com.training.service.ErrorsHandlerService;
+import com.training.validator.ErrorsChecker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/tickets/{id}/comments")
-@Slf4j
 @RequiredArgsConstructor
 public class CommentController {
 
@@ -29,18 +29,18 @@ public class CommentController {
     private static final String SLASH = "/";
 
     private final CommentService commentService;
-    private final ErrorsHandlerService errorsHandlerService;
+    private final ErrorsChecker errorsChecker;
 
     @GetMapping
-    public ResponseEntity<List<OutputCommentDto>> getTicketComments(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(commentService.findAllByTicketId(id));
+    public ResponseEntity<List<OutputCommentDto>> getTicketComments(@PathVariable("id") UUID ticketId) {
+        return ResponseEntity.ok(commentService.findAllByTicketId(ticketId));
     }
 
     @PostMapping
-    public ResponseEntity<OutputCommentDto> addComment(@PathVariable("id") Long ticketId,
+    public ResponseEntity<OutputCommentDto> addComment(@PathVariable("id") UUID ticketId,
                                                        @Validated @RequestBody InputCommentDto inputCommentDto,
                                                        Errors errors) {
-        errorsHandlerService.checkErrors(errors);
+        errorsChecker.checkErrors(errors);
         return ResponseEntity
                 .created(URI.create(SLASH + ticketId + COMMENTS_PATH))
                 .body(commentService.addCommentToTicket(ticketId, inputCommentDto));

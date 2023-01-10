@@ -4,8 +4,8 @@ import com.training.dto.ticket.InputDraftTicketDto;
 import com.training.dto.ticket.InputTicketDto;
 import com.training.dto.ticket.OutputTicketDto;
 import com.training.dto.ticket.OutputTicketWithDetailsDto;
-import com.training.service.ErrorsHandlerService;
 import com.training.service.TicketService;
+import com.training.validator.ErrorsChecker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -19,37 +19,43 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/tickets")
-@Slf4j
 @RequiredArgsConstructor
 public class TicketController {
 
     private static final String MY_TICKETS_PATH = "/myTickets";
 
     private final TicketService ticketService;
-    private final ErrorsHandlerService errorsHandlerService;
+    private final ErrorsChecker errorsChecker;
 
     @GetMapping
-    public ResponseEntity<List<OutputTicketDto>> getTickets() {
-        return ResponseEntity.ok(ticketService.findAll());
+    public ResponseEntity<List<OutputTicketDto>> getTickets(
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "name") String sort) {
+        return ResponseEntity.ok(ticketService.findAll(page, size, sort));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OutputTicketWithDetailsDto> getTicketById(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(ticketService.findById(id));
+    public ResponseEntity<OutputTicketWithDetailsDto> getTicketById(@PathVariable("id") UUID ticketId) {
+        return ResponseEntity.ok(ticketService.findById(ticketId));
     }
 
     @PatchMapping("/{id}/{action}")
-    public ResponseEntity<Void> changeTicketState(@PathVariable("id") Long id, @PathVariable("action") String action) {
-        ticketService.changeState(id, action);
+    public ResponseEntity<Void> changeTicketState(
+            @PathVariable("id") UUID ticketId,
+            @PathVariable("action") String action) {
+        ticketService.changeState(ticketId, action);
         return ResponseEntity.noContent().build();
     }
 
@@ -60,7 +66,7 @@ public class TicketController {
             @RequestPart(name = "attachments", required = false) List<MultipartFile> attachments,
             Errors errors) {
 
-        errorsHandlerService.checkErrors(errors);
+        errorsChecker.checkErrors(errors);
         return ResponseEntity
                 .created(URI.create(MY_TICKETS_PATH))
                 .body(ticketService.createNewTicket(inputTicketDto, attachments));
@@ -73,7 +79,7 @@ public class TicketController {
             @RequestPart(name = "attachments", required = false) List<MultipartFile> attachments,
             Errors errors) {
 
-        errorsHandlerService.checkErrors(errors);
+        errorsChecker.checkErrors(errors);
         return ResponseEntity
                 .created(URI.create(MY_TICKETS_PATH))
                 .body(ticketService.saveTicketAsDraft(inputTicketDto, attachments));

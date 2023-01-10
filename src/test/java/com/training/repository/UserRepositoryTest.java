@@ -53,12 +53,12 @@ class UserRepositoryTest {
 
     @Test
     @DisplayName("should return true if user with the same email already exists.")
-    void testIsUserExistsByEmailIsTrue() {
+    void testExistsUserByEmailIsTrue() {
         // given
         userRepository.save(user);
 
         // when
-        boolean result = userRepository.isUserExistsByEmail(EMAIL);
+        boolean result = userRepository.existsUserByEmail(EMAIL);
 
         // then
         assertThat(result).isTrue();
@@ -66,9 +66,9 @@ class UserRepositoryTest {
 
     @Test
     @DisplayName("should return false if user with the same email does not exists.")
-    void testIsUserExistsByEmailIsFalse() {
+    void testExistsUserByEmailIsFalse() {
         // when
-        boolean result = userRepository.isUserExistsByEmail(EMAIL);
+        boolean result = userRepository.existsUserByEmail(EMAIL);
 
         // then
         assertThat(result).isFalse();

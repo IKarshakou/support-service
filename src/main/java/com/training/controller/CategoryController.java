@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/categories")
-@Slf4j
 @RequiredArgsConstructor
 public class CategoryController {
 
@@ -34,8 +34,8 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable("id") Long id) {
-        categoryService.deleteCategory(id);
+    public ResponseEntity<Void> deleteCategory(@PathVariable("id") UUID categoryId) {
+        categoryService.deleteCategory(categoryId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -38,10 +39,10 @@ import java.util.Objects;
 public class Ticket {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "ticket_id",
             updatable = false)
-    private Long id;
+    private UUID id;
 
     @Setter
     @Column(name = "ticket_name",

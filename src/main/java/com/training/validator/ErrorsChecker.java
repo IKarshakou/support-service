@@ -1,7 +1,7 @@
-package com.training.service;
+package com.training.validator;
 
 import org.springframework.validation.Errors;
 
-public interface ErrorsHandlerService {
+public interface ErrorsChecker {
     void checkErrors(Errors errors);
 }

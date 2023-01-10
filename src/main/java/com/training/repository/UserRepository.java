@@ -7,22 +7,21 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, UUID> {
 
-    @Query("SELECT u FROM User u WHERE u.email = :email")
     Optional<User> findByEmail(String email);
 
-    @Query("SELECT CASE WHEN COUNT(u) > 0 "
-            + "THEN TRUE "
-            + "ELSE FALSE END "
-            + "FROM User u WHERE u.email = :email")
-    boolean isUserExistsByEmail(String email);
+    boolean existsUserByEmail(String email);
 
     @Query("SELECT u FROM User u WHERE u.role = 'MANAGER'")
     List<User> findAllManagers();
 
     @Query("SELECT u FROM User u WHERE u.role = 'ENGINEER'")
     List<User> findAllEngineers();
+
+    @Query("DELETE FROM User u WHERE u.id = :id")
+    void deleteUserById(UUID id);
 }

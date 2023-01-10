@@ -6,13 +6,14 @@ import com.training.entity.Ticket;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface AttachmentService {
-    List<OutputAttachmentDto> getAttachments(Long ticketId);
+    List<OutputAttachmentDto> getAttachments(UUID ticketId);
 
-    AttachmentToDownloadDto getAttachmentToDownload(Long attachmentId);
+    AttachmentToDownloadDto getAttachmentToDownload(UUID attachmentId);
 
     void uploadAttachmentsToServer(Ticket ticket, List<MultipartFile> multipartAttachments);
 
-    void deleteAttachment(Long attachmentId);
+    void deleteAttachment(UUID attachmentId);
 }

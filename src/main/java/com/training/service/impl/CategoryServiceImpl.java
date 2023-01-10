@@ -10,13 +10,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
@@ -27,7 +26,7 @@ public class CategoryServiceImpl implements CategoryService {
     private static final String CATEGORY_ALREADY_EXISTS_MSG = "Category with this name already exists.";
 
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    @Transactional(readOnly = true)
     public List<CategoryDto> findAll() {
         return categoryMapper.convertListToDto(categoryRepository.findAll());
     }
@@ -46,10 +45,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public void deleteCategory(Long id) {
-        var category = categoryRepository
-                .findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(CATEGORY_NOT_FOUND_MSG));
-        categoryRepository.delete(category);
+    public void deleteCategory(UUID categoryId) {
+        categoryRepository.deleteCategoryById(categoryId);
     }
 }

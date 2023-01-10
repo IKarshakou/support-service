@@ -3,7 +3,6 @@ package com.training.service.impl;
 import com.training.dto.user.InputUserDto;
 import com.training.dto.user.OutputUserDto;
 import com.training.dto.user.UpdatedUserDto;
-import com.training.entity.User;
 import com.training.mapper.UserMapper;
 import com.training.repository.UserRepository;
 import com.training.security.UserPrincipal;
@@ -15,13 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
@@ -33,7 +31,6 @@ public class UserServiceImpl implements UserService {
     private static final String GET_ALL_USERS_LOG = "Getting all Users. Result is empty = [{}]";
     private static final String ADD_USER_LOG = "Adding User to database: [{}].";
     private static final String UPDATE_USER_LOG = "Updating User with ID = [{}].";
-    private static final String USER_NOT_FOUND_LOG = "User with ID = [{}] not found.";
     private static final String DELETE_USER_LOG = "Removing User with ID = [{}]";
     private static final String DELETE_USER_SUCCESS_LOG = "User successfully removed.";
 
@@ -42,9 +39,9 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-    public OutputUserDto getUserById(Long id) {
-        log.info(GET_USER_BY_ID_LOG, id);
+    @Transactional(readOnly = true)
+    public OutputUserDto getUserById(UUID id) {
+//        log.info(GET_USER_BY_ID_LOG, id);
 
         return userMapper.convertToDto(userRepository
                 .findById(id)
@@ -52,9 +49,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    @Transactional(readOnly = true)
     public OutputUserDto getUserByEmail(String email) {
-        log.info(GET_USER_BY_EMAIL_LOG, email);
+//        log.info(GET_USER_BY_EMAIL_LOG, email);
 
         return userMapper.convertToDto(userRepository
                 .findByEmail(email)
@@ -62,10 +59,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    @Transactional(readOnly = true)
     public List<OutputUserDto> getAllUsers() {
         var userList = userRepository.findAll();
-        log.info(GET_ALL_USERS_LOG, userList.isEmpty());
+//        log.info(GET_ALL_USERS_LOG, userList.isEmpty());
 
         return userList
                 .stream()
@@ -77,9 +74,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void addUser(InputUserDto inputUserDto) {
         var user = userMapper.convertToEntity(inputUserDto);
-        log.info(ADD_USER_LOG, user);
+//        log.info(ADD_USER_LOG, user);
 
-        if (userRepository.isUserExistsByEmail(user.getEmail())) {
+        if (userRepository.existsUserByEmail(user.getEmail())) {
             throw new EntityExistsException(USER_IS_ALREADY_EXISTS_MSG.formatted(user.getEmail()));
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -94,7 +91,7 @@ public class UserServiceImpl implements UserService {
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
-        log.info(UPDATE_USER_LOG, userPrincipal.getId());
+//        log.info(UPDATE_USER_LOG, userPrincipal.getId());
 
         var user = userRepository
                 .findById(userPrincipal.getId())
@@ -112,13 +109,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void removeUser(Long id) {
-        log.info(DELETE_USER_LOG, id);
+    public void removeUser(UUID id) {
+//        log.info(DELETE_USER_LOG, id);
 
-        userRepository.delete(userRepository
-                .findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MSG)));
+        userRepository.deleteUserById(id);
 
-        log.info(DELETE_USER_SUCCESS_LOG);
+//        log.info(DELETE_USER_SUCCESS_LOG);
     }
 }

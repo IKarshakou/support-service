@@ -2,9 +2,12 @@ package com.training.config;
 
 import com.training.constants.SecurityConstants;
 import com.training.filter.JwtTokenGeneratorFilter;
+import com.training.filter.JwtTokenRefreshFilter;
 import com.training.filter.JwtTokenValidatorFilter;
+import com.training.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,6 +28,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private static final String LOGOUT_PATH = "/logout";
+    private static final String REFRESH_TOKEN_PATH = "/refresh";
     private static final String NEW_USER_PATH = "/users";
     private static final String ALLOW_CROSS_ORIGIN_FOR = "http://localhost:[*]";
     private static final String ALL = "*";
@@ -43,7 +47,7 @@ public class SecurityConfig {
                     config.setAllowedMethods(Collections.singletonList(ALL));
                     config.setAllowCredentials(true);
                     config.setAllowedHeaders(Collections.singletonList(ALL));
-                    config.setExposedHeaders(List.of(SecurityConstants.JWT_HEADER));
+                    config.setExposedHeaders(List.of(HttpHeaders.AUTHORIZATION));
                     config.setMaxAge(HOUR_AGE);
                     return config;
                 })
@@ -52,10 +56,15 @@ public class SecurityConfig {
                 .csrf().disable()
 
                 .addFilterBefore(jwtTokenValidatorFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(jwtTokenRefreshFilter(), JwtTokenValidatorFilter.class)
                 .addFilterAfter(jwtTokenGeneratorFilter(), BasicAuthenticationFilter.class)
 
                 .authorizeHttpRequests()
-                .requestMatchers(HttpMethod.POST, SecurityConstants.LOGIN_PATH, LOGOUT_PATH, NEW_USER_PATH).permitAll()
+                .requestMatchers(HttpMethod.POST,
+                        SecurityConstants.LOGIN_PATH,
+                        LOGOUT_PATH,
+                        REFRESH_TOKEN_PATH,
+                        NEW_USER_PATH).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .httpBasic();
@@ -75,5 +84,10 @@ public class SecurityConfig {
     @Bean
     public JwtTokenGeneratorFilter jwtTokenGeneratorFilter() {
         return new JwtTokenGeneratorFilter();
+    }
+
+    @Bean
+    public JwtTokenRefreshFilter jwtTokenRefreshFilter() {
+        return new JwtTokenRefreshFilter();
     }
 }

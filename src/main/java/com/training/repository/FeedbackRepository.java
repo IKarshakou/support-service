@@ -6,16 +6,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
+public interface FeedbackRepository extends JpaRepository<Feedback, UUID> {
 
-    @Query("SELECT f FROM Feedback f WHERE f.ticket.id = :ticketId")
-    Optional<Feedback> findByTicketId(Long ticketId);
+    Optional<Feedback> findByTicketId(UUID ticketId);
 
-    @Query("SELECT CASE WHEN COUNT(f) > 0 "
-            + "THEN TRUE "
-            + "ELSE FALSE END "
-            + "FROM Feedback f WHERE f.ticket.id = :ticketId")
-    boolean isFeedbackExistsByTicketId(Long ticketId);
+    boolean existsFeedbackByTicketId(UUID ticketId);
 }

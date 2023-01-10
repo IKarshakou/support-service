@@ -18,12 +18,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class MailServiceImpl implements MailService {
 
-    private static final String MESSAGING_EXCEPTION_MSG = "Failed to send email.";
-    private static final String INVALID_RECIPIENT_LIST_LOG = "Invalid recipient list, can't to send email.";
+    private static final String MESSAGING_EXCEPTION_MSG = "Failed to send email - invalid recipient list.";
+    private static final String INVALID_RECIPIENTS_MSG = "Failed to send email - invalid recipient list.";
     private static final String INCORRECT_SUBJECT_MSG = "Incorrect subject. Mail not sent.";
 
     private static final String NEW_TICKET_MAIL_TEMPLATE_NAME = "mail/newTicketMail";
@@ -53,8 +52,7 @@ public class MailServiceImpl implements MailService {
     @Override
     public void sendTicketHandlingEmail(List<User> recipients, Ticket ticket, String subject) {
         if (recipients == null || recipients.isEmpty()) {
-            log.warn(INVALID_RECIPIENT_LIST_LOG);
-            throw new IllegalArgumentException(MESSAGING_EXCEPTION_MSG);
+            throw new IllegalArgumentException(INVALID_RECIPIENTS_MSG);
         }
 
         try {
@@ -76,7 +74,6 @@ public class MailServiceImpl implements MailService {
                 mailSender.send(mimeMessage);
             }
         } catch (MessagingException ex) {
-            log.error(MESSAGING_EXCEPTION_MSG, ex);
             throw new MailSendException(MESSAGING_EXCEPTION_MSG, ex);
         }
     }

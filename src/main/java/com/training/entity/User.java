@@ -20,6 +20,7 @@ import lombok.ToString;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -31,10 +32,10 @@ import java.util.Objects;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "user_id",
             updatable = false)
-    private Long id;
+    private UUID id;
 
     @Setter
     @Column(name = "first_name")

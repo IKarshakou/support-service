@@ -1,13 +1,13 @@
-package com.training.service.impl;
+package com.training.validator.impl;
 
-import com.training.service.ErrorsHandlerService;
-import org.springframework.stereotype.Service;
+import com.training.validator.ErrorsChecker;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
 import java.util.Objects;
 
-@Service
-public class ErrorsHandlerServiceImpl implements ErrorsHandlerService {
+@Component
+public class ErrorsCheckerImpl implements ErrorsChecker {
 
     @Override
     public void checkErrors(Errors errors) {

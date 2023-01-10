@@ -1,6 +1,6 @@
 package com.training.controller;
 
-import com.training.service.ErrorsHandlerService;
+import com.training.validator.ErrorsChecker;
 import com.training.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,13 +17,13 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 
 @SpringBootTest
 @WebMvcTest(UserController.class)
-@MockBeans({@MockBean(UserService.class), @MockBean(ErrorsHandlerService.class)})
+@MockBeans({@MockBean(UserService.class), @MockBean(ErrorsChecker.class)})
 class UserControllerTest {
 
     @Autowired
     private UserService userService;
     @Autowired
-    private ErrorsHandlerService errorsHandlerService;
+    private ErrorsChecker errorsChecker;
     @Autowired
     private WebApplicationContext context;
 

@@ -2,7 +2,7 @@ package com.training.controller;
 
 import com.training.dto.feedback.InputFeedbackDto;
 import com.training.dto.feedback.OutputFeedbackDto;
-import com.training.service.ErrorsHandlerService;
+import com.training.validator.ErrorsChecker;
 import com.training.service.FeedbackService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/tickets/{id}/feedbacks")
-@Slf4j
 @RequiredArgsConstructor
 public class FeedbackController {
 
@@ -29,14 +29,14 @@ public class FeedbackController {
     private static final String SLASH = "/";
 
     private final FeedbackService feedbackService;
-    private final ErrorsHandlerService errorsHandlerService;
+    private final ErrorsChecker errorsChecker;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ROLE_EMPLOYEE', 'ROLE_MANAGER')")
-    public ResponseEntity<Void> leaveFeedback(@PathVariable("id") Long ticketId,
+    public ResponseEntity<Void> leaveFeedback(@PathVariable("id") UUID ticketId,
                                               @Validated @RequestBody InputFeedbackDto inputFeedbackDto,
                                               Errors errors) {
-        errorsHandlerService.checkErrors(errors);
+        errorsChecker.checkErrors(errors);
         feedbackService.addFeedback(ticketId, inputFeedbackDto);
         return ResponseEntity
                 .created(URI.create(MY_TICKETS_PATH + SLASH + ticketId)).build();
@@ -44,7 +44,7 @@ public class FeedbackController {
 
     @GetMapping
     @PreAuthorize("hasRole('ROLE_ENGINEER')")
-    public ResponseEntity<OutputFeedbackDto> getFeedback(@PathVariable("id") Long ticketId) {
+    public ResponseEntity<OutputFeedbackDto> getFeedback(@PathVariable("id") UUID ticketId) {
         return ResponseEntity.ok(feedbackService.getFeedback(ticketId));
     }
 }

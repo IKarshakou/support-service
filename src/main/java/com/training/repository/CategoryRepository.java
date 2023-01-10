@@ -6,9 +6,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface CategoryRepository extends JpaRepository<Category, Long> {
-    @Query("FROM Category WHERE name = :name")
+public interface CategoryRepository extends JpaRepository<Category, UUID> {
+
     Optional<Category> findByName(String name);
+
+    @Query("DELETE FROM Category c WHERE c.id = :id")
+    void deleteCategoryById(UUID id);
 }

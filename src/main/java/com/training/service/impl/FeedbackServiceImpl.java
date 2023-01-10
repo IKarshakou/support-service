@@ -17,13 +17,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class FeedbackServiceImpl implements FeedbackService {
 
@@ -40,7 +39,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     @Transactional
-    public void addFeedback(Long ticketId, InputFeedbackDto inputFeedbackDto) {
+    public void addFeedback(UUID ticketId, InputFeedbackDto inputFeedbackDto) {
         var feedback = feedbackMapper.convertToEntity(inputFeedbackDto);
         var ticket = ticketRepository
                 .findById(ticketId)
@@ -57,7 +56,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
         if (ticket.getOwner().getId().equals(user.getId())
                 && ticket.getState().equals(State.DONE)
-                && !feedbackRepository.isFeedbackExistsByTicketId(ticketId)) {
+                && !feedbackRepository.existsFeedbackByTicketId(ticketId)) {
 
             feedback.setUser(user);
             feedback.setTicket(ticket);
@@ -71,8 +70,8 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-    public OutputFeedbackDto getFeedback(Long ticketId) {
+    @Transactional(readOnly = true)
+    public OutputFeedbackDto getFeedback(UUID ticketId) {
         var userPrincipal = (UserPrincipal) SecurityContextHolder
                 .getContext()
                 .getAuthentication()

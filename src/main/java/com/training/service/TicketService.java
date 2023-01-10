@@ -7,15 +7,16 @@ import com.training.dto.ticket.OutputTicketWithDetailsDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface TicketService {
-    List<OutputTicketDto> findAll();
+    OutputTicketWithDetailsDto findById(UUID id);
 
-    OutputTicketWithDetailsDto findById(Long id);
-
-    void changeState(Long id, String inputAction);
+    void changeState(UUID id, String inputAction);
 
     OutputTicketDto createNewTicket(InputTicketDto inputTicketDto, List<MultipartFile> attachments);
 
     OutputTicketDto saveTicketAsDraft(InputDraftTicketDto inputTicketDto, List<MultipartFile> attachments);
+
+    List<OutputTicketDto> findAll(int page, int size, String sort);
 }

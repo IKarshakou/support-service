@@ -19,6 +19,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,10 +31,10 @@ import java.util.Objects;
 public class Comment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "user_comment_id",
             updatable = false)
-    private Long id;
+    private UUID id;
 
     @ToString.Exclude
     @Setter
