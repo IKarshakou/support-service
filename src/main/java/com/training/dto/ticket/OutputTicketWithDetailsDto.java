@@ -14,6 +14,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @NoArgsConstructor
@@ -24,14 +25,14 @@ import java.util.List;
 @ToString
 public class OutputTicketWithDetailsDto {
     private String name;
-    @JsonFormat(pattern="dd.MM.yyyy")
-    private LocalDate creationDate;
+    @JsonFormat(pattern="dd.MM.yyyy hh:mm:ss")
+    private LocalDateTime creationDate;
     private String state;
     private CategoryDto category;
     private String urgency;
     private String description;
-    @JsonFormat(pattern="dd.MM.yyyy")
-    private LocalDate desiredResolutionDate;
+    @JsonFormat(pattern="dd.MM.yyyy hh:mm:ss")
+    private LocalDateTime desiredResolutionDate;
     private OutputUserDto owner;
     private OutputUserDto approver;
     private OutputUserDto assignee;

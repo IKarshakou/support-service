@@ -10,7 +10,7 @@ import com.training.exception.AttachmentNotFoundException;
 import com.training.exception.AttachmentUploadException;
 import com.training.mapper.AttachmentMapper;
 import com.training.repository.AttachmentRepository;
-import com.training.security.UserPrincipal;
+import com.training.entity.UserPrincipal;
 import com.training.service.AttachmentService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -130,7 +130,7 @@ public class AttachmentServiceImpl implements AttachmentService, InitializingBea
 
         var historyElement = History.builder()
                 .ticket(ticket)
-                .user(User.builder().id(userPrincipal.getId()).build())
+                .user(User.builder().id(userPrincipal.getUser().getId()).build())
                 .action(FILE_ATTACHED_ACTION)
                 .description(FILE_ATTACHED_DESCRIPTION.formatted(filename))
                 .build();
@@ -146,7 +146,7 @@ public class AttachmentServiceImpl implements AttachmentService, InitializingBea
 
         var historyElement = History.builder()
                 .ticket(ticket)
-                .user(User.builder().id(userPrincipal.getId()).build())
+                .user(User.builder().id(userPrincipal.getUser().getId()).build())
                 .action(FILE_REMOVED_ACTION)
                 .description(FILE_REMOVED_DESCRIPTION.formatted(filename))
                 .build();

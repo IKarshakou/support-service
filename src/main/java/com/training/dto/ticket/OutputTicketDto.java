@@ -1,6 +1,8 @@
 package com.training.dto.ticket;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,6 +11,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -17,11 +20,14 @@ import java.util.UUID;
 @Setter
 @Builder
 @ToString
+@JsonPropertyOrder({"id", "ticket", "desiredResolutionDate", "state", "urgency"})
 public class OutputTicketDto {
     private UUID id;
+    @JsonProperty("ticket")
     private String name;
-    @JsonFormat(pattern="dd.MM.yyyy")
-    private LocalDate desiredResolutionDate;
+    @JsonProperty("deadline")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy hh:mm:ss")
+    private LocalDateTime desiredResolutionDate;
     private String urgency;
     private String state;
 }

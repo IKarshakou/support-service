@@ -1,5 +1,6 @@
 package com.training.dto.ticket;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.training.dto.category.CategoryDto;
 import com.training.dto.comment.InputCommentDto;
 import jakarta.validation.constraints.FutureOrPresent;
@@ -13,6 +14,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -55,8 +57,10 @@ public class InputTicketDto {
     @NotNull(message = URGENCY_NOT_NULL_VALIDATION_MSG)
     private String urgency;
 
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss[.SSS][.SS][.S]")
+//    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy hh:mm:ss")
     @FutureOrPresent(message = DESIRED_RESOLUTION_DATE_VALIDATION_MSG)
-    private LocalDate desiredResolutionDate;
+    private LocalDateTime desiredResolutionDate;
 
     private InputCommentDto comment;
 }

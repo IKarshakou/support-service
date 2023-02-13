@@ -10,4 +10,14 @@ public class SupportServiceApplication {
         SpringApplication.run(SupportServiceApplication.class, args);
     }
 
+//    @Bean
+//    public RestTemplate restTemplate() {
+//        return new RestTemplateBuilder().build();
+//    }
+
+//    @Bean
+//    @Primary
+//    public ObjectMapper objectMapper() {
+//        return new Jackson2ObjectMapperBuilder().build();
+//    }
 }

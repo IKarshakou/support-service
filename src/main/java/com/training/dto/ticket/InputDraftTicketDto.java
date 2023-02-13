@@ -13,6 +13,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -49,7 +50,7 @@ public class InputDraftTicketDto {
     private String urgency;
 
     @FutureOrPresent(message = DESIRED_RESOLUTION_DATE_VALIDATION_MSG)
-    private LocalDate desiredResolutionDate;
+    private LocalDateTime desiredResolutionDate;
 
     private InputCommentDto comment;
 }

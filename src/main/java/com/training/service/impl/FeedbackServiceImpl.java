@@ -9,12 +9,11 @@ import com.training.exception.TicketNotAvailableException;
 import com.training.mapper.FeedbackMapper;
 import com.training.repository.FeedbackRepository;
 import com.training.repository.TicketRepository;
-import com.training.security.UserPrincipal;
+import com.training.entity.UserPrincipal;
 import com.training.service.FeedbackService;
 import com.training.service.MailService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,7 +50,7 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .getPrincipal();
 
         var user = User.builder()
-                .id(userPrincipal.getId())
+                .id(userPrincipal.getUser().getId())
                 .build();
 
         if (ticket.getOwner().getId().equals(user.getId())
@@ -82,7 +81,7 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .orElseThrow(() -> new EntityNotFoundException(TICKET_NOT_FOUND_MSG));
 
         Feedback feedback;
-        if (ticket.getAssignee() != null && ticket.getAssignee().getId().equals(userPrincipal.getId())) {
+        if (ticket.getAssignee() != null && ticket.getAssignee().getId().equals(userPrincipal.getUser().getId())) {
             feedback = feedbackRepository
                     .findByTicketId(ticketId)
                     .orElseThrow(() -> new EntityNotFoundException(FEEDBACK_NOT_FOUND_MSG));

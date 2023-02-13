@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: fill-roles-table
+      author: IKarshakou
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            encoding: UTF-8
+            stripComments: true
+            path: db/changelog/changeset/sql/03-fill-roles-table.sql
+        - tagDatabase:
+            tag: fill_roles_table

@@ -17,10 +17,13 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     boolean existsUserByEmail(String email);
 
-    @Query("SELECT u FROM User u WHERE u.role = 'MANAGER'")
+    @Query(value = "SELECT * FROM users", nativeQuery = true)
+    List<User> findAllUsers();
+
+    @Query("SELECT u FROM User u WHERE u.role.name = 'MANAGER'")
     List<User> findAllManagers();
 
-    @Query("SELECT u FROM User u WHERE u.role = 'ENGINEER'")
+    @Query("SELECT u FROM User u WHERE u.role.name = 'ENGINEER'")
     List<User> findAllEngineers();
 
     @Modifying

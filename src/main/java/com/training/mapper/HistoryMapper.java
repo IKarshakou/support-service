@@ -6,13 +6,9 @@ import org.mapstruct.Mapper;
 
 import java.util.List;
 
-@Mapper
+@Mapper(uses = UserMapper.class)
 public interface HistoryMapper {
     OutputHistoryDto convertToDto(History history);
 
-    History convertToEntity(OutputHistoryDto outputHistoryDto);
-
     List<OutputHistoryDto> convertListToDto(List<History> histories);
-
-    List<History> convertListToEntity(List<OutputHistoryDto> historiesDto);
 }

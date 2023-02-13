@@ -2,7 +2,19 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/01-changeset-init-database.yml
   - include:
+      file: db/changelog/changeset/02-fill-permissions-table.yml
+  - include:
+      file: db/changelog/changeset/03-fill-roles-table.yml
+  - include:
+      file: db/changelog/changeset/04-fill-roles-permissions-table.yml
+  - include:
+      file: db/changelog/changeset/05-changeset-create-acl-tables.yml
+#  - include:
+#      file: db/changelog/changeset/06-changeset-fill-acl-tables.yml
+  - include:
       file: db/changelog/changeset/10-changeset-fill-users-table.yml
+  - include:
+      file: db/changelog/changeset/11-fill-users-principal-table.yml
   - include:
       file: db/changelog/changeset/20-changeset-fill-categories-table.yml
   - include:

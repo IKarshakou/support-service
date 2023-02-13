@@ -3,7 +3,6 @@ package com.training.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -13,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,13 +30,12 @@ public class Category {
 
     @Id
     @GeneratedValue
-    @Column(name = "category_id",
-            updatable = false)
+    @UuidGenerator(style = UuidGenerator.Style.RANDOM)
+    @Column(updatable = false)
     private UUID id;
 
     @Setter
-    @Column(name = "category_name",
-            unique = true,
+    @Column(unique = true,
             nullable = false)
     private String name;
 

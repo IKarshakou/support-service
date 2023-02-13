@@ -1,5 +1,5 @@
 package com.training.entity.enums;
 
-public enum Role {
+public enum RoleEnum {
     EMPLOYEE, MANAGER, ENGINEER
 }

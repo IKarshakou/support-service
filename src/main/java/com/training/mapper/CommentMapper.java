@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 
 import java.util.List;
 
-@Mapper(imports = {UserMapper.class})
+@Mapper(uses = UserMapper.class)
 public interface CommentMapper {
 
     OutputCommentDto convertToDto(Comment comment);

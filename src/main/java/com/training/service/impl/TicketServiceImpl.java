@@ -8,23 +8,23 @@ import com.training.entity.History;
 import com.training.entity.Ticket;
 import com.training.entity.User;
 import com.training.entity.enums.Action;
-import com.training.entity.enums.Role;
+import com.training.entity.enums.RoleEnum;
 import com.training.entity.enums.State;
 import com.training.exception.TicketNotAvailableException;
 import com.training.mapper.TicketMapper;
 import com.training.repository.CategoryRepository;
 import com.training.repository.TicketRepository;
 import com.training.repository.UserRepository;
-import com.training.security.UserPrincipal;
+import com.training.entity.UserPrincipal;
 import com.training.service.AttachmentService;
 import com.training.service.MailService;
 import com.training.service.TicketService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -68,6 +68,7 @@ public class TicketServiceImpl implements TicketService {
     private final TicketMapper ticketMapper;
 
     @Override
+    @PreAuthorize("hasAuthority('READ_TICKET')")
     @Transactional(readOnly = true)
     public List<OutputTicketDto> findAll(int page, int size, String sort) {
         var userPrincipal = (UserPrincipal) SecurityContextHolder
@@ -82,10 +83,10 @@ public class TicketServiceImpl implements TicketService {
 
         Page<Ticket> tickets;
         var pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
-        if (authoritiesSet.contains(ROLE_PREFIX + Role.EMPLOYEE.name())) {
-            tickets = ticketRepository.findAllByEmployee(userPrincipal.getId(), pageable);
-        } else if (authoritiesSet.contains(ROLE_PREFIX + Role.MANAGER.name())) {
-            tickets = ticketRepository.findAllByManager(
+        if (authoritiesSet.contains(ROLE_PREFIX + RoleEnum.EMPLOYEE.name())) {
+            tickets = ticketRepository.findAllByEmployeeId(userPrincipal.getId(), pageable);
+        } else if (authoritiesSet.contains(ROLE_PREFIX + RoleEnum.MANAGER.name())) {
+            tickets = ticketRepository.findAllByManagerId(
                     userPrincipal.getId(),
                     List.of(
                             State.APPROVED,
@@ -95,7 +96,7 @@ public class TicketServiceImpl implements TicketService {
                             State.DONE),
                     pageable);
         } else {
-            tickets = ticketRepository.findAllByEngineer(userPrincipal.getId(), pageable);
+            tickets = ticketRepository.findAllByEngineerId(userPrincipal.getId(), pageable);
         }
 
         if (tickets.isEmpty()) {
@@ -106,10 +107,11 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('READ_TICKET')")
     @Transactional(readOnly = true)
     public OutputTicketWithDetailsDto findById(UUID id) {
         return ticketMapper.convertToTicketWithDetailsDto(ticketRepository
-                .findById(id)
+                .findByTicketId(id)
                 .orElseThrow(() -> new EntityNotFoundException(TICKET_NOT_FOUND_MSG)));
     }
 
@@ -153,6 +155,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('CREATE_TICKET') and hasAnyRole('EMPLOYEE', 'MANAGER')")
     @Transactional
     public OutputTicketDto saveTicketAsDraft(InputDraftTicketDto inputTicketDto, List<MultipartFile> attachments) {
         var ticket = ticketMapper.convertDraftToEntity(inputTicketDto, List.of(inputTicketDto.getComment()));
@@ -168,7 +171,7 @@ public class TicketServiceImpl implements TicketService {
                 .getPrincipal();
 
         var user = User.builder()
-                .id(userPrincipal.getId())
+                .id(userPrincipal.getUser().getId())
                 .build();
 
         var category = categoryRepository
@@ -253,7 +256,7 @@ public class TicketServiceImpl implements TicketService {
         if ((userIsManager(userPrincipal) && isNew(ticket))
                 && (employeeIsOwner(ticket) || userIsOwner(userPrincipal, ticket))) {
 
-            var approver = User.builder().id(userPrincipal.getId()).build();
+            var approver = User.builder().id(userPrincipal.getUser().getId()).build();
 
             var ticketStateHistory = History.builder()
                     .user(approver)
@@ -280,7 +283,7 @@ public class TicketServiceImpl implements TicketService {
                 && (employeeIsOwner(ticket) || userIsOwner(userPrincipal, ticket))) {
 
             var ticketStateHistory = History.builder()
-                    .user(User.builder().id(userPrincipal.getId()).build())
+                    .user(User.builder().id(userPrincipal.getUser().getId()).build())
                     .ticket(ticket)
                     .action(TICKET_STATUS_CHANGED_ACTION)
                     .description(TICKET_STATUS_CHANGED_DESCRIPTION.formatted(
@@ -310,7 +313,7 @@ public class TicketServiceImpl implements TicketService {
                 && ticket.getState().equals(State.APPROVED))) {
 
             var ticketStateHistory = History.builder()
-                    .user(User.builder().id(userPrincipal.getId()).build())
+                    .user(User.builder().id(userPrincipal.getUser().getId()).build())
                     .ticket(ticket)
                     .action(TICKET_STATUS_CHANGED_ACTION)
                     .description(TICKET_STATUS_CHANGED_DESCRIPTION.formatted(
@@ -338,7 +341,7 @@ public class TicketServiceImpl implements TicketService {
 
     private void assignTicket(Ticket ticket, UserPrincipal userPrincipal) {
         if (userIsEngineer(userPrincipal) && ticket.getState().equals(State.APPROVED)) {
-            var assignedUser = User.builder().id(userPrincipal.getId()).build();
+            var assignedUser = User.builder().id(userPrincipal.getUser().getId()).build();
 
             var ticketStateHistory = History.builder()
                     .user(assignedUser)
@@ -359,7 +362,7 @@ public class TicketServiceImpl implements TicketService {
     private void doneTicket(Ticket ticket, UserPrincipal userPrincipal) {
         if (userIsEngineer(userPrincipal) && ticket.getState().equals(State.IN_PROGRESS)) {
             var ticketChangeStateHistory = History.builder()
-                    .user(User.builder().id(userPrincipal.getId()).build())
+                    .user(User.builder().id(userPrincipal.getUser().getId()).build())
                     .ticket(ticket)
                     .action(TICKET_STATUS_CHANGED_ACTION)
                     .description(TICKET_STATUS_CHANGED_DESCRIPTION.formatted(
@@ -376,21 +379,21 @@ public class TicketServiceImpl implements TicketService {
     }
 
     private boolean userIsManager(UserPrincipal userPrincipal) {
-        var requiredAuthority = new SimpleGrantedAuthority(ROLE_PREFIX + Role.MANAGER);
+        var requiredAuthority = new SimpleGrantedAuthority(ROLE_PREFIX + RoleEnum.MANAGER);
         return userPrincipal.getAuthorities().contains(requiredAuthority);
     }
 
     private boolean userIsEngineer(UserPrincipal userPrincipal) {
-        var requiredAuthority = new SimpleGrantedAuthority(ROLE_PREFIX + Role.ENGINEER);
+        var requiredAuthority = new SimpleGrantedAuthority(ROLE_PREFIX + RoleEnum.ENGINEER);
         return userPrincipal.getAuthorities().contains(requiredAuthority);
     }
 
     private boolean employeeIsOwner(Ticket ticket) {
-        return ticket.getOwner().getRole().equals(Role.EMPLOYEE);
+        return ticket.getOwner().getRole().getName().equals(RoleEnum.EMPLOYEE);
     }
 
     private boolean userIsOwner(UserPrincipal userPrincipal, Ticket ticket) {
-        return userPrincipal.getId().equals(ticket.getOwner().getId());
+        return userPrincipal.getUser().getId().equals(ticket.getOwner().getId());
     }
 
     private boolean isNew(Ticket ticket) {

@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: fill-users-principal-table
+      author: IKarshakou
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            encoding: UTF-8
+            stripComments: true
+            path: db/changelog/changeset/sql/11-fill-users-principal-table.sql
+        - tagDatabase:
+            tag: fill_users_principal_table
