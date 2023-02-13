@@ -126,3 +126,4 @@ $RECYCLE.BIN/
 *.ser
 checkstyle.xml
 pmd-ruleset.xml
+*.gz
