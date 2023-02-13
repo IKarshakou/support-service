@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: fill-acl-tables
+      author: IKarshakou
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            encoding: UTF-8
+            stripComments: true
+            path: db/changelog/changeset/sql/06-fill-acl-tables.sql
+        - tagDatabase:
+            tag: fill_acl_tables

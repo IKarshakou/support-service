@@ -2,7 +2,10 @@ package com.training.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.training.constants.SecurityConstants;
+import com.training.entity.UserPrincipal;
+import com.training.repository.UserPrincipalRepository;
 import com.training.repository.UserRepository;
+import com.training.service.UserPrincipalService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,6 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -33,10 +38,20 @@ public class JwtTokenRefreshFilter extends OncePerRequestFilter {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserPrincipalService userPrincipalService;
+
+//    @Autowired
+//    private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserPrincipalRepository userPrincipalRepository;
+
     private static final String SUBJECT_ACCESS_TOKEN = "Access Token";
     private static final String SUBJECT_REFRESH_TOKEN = "Refresh Token";
     private static final String REFRESH_TOKEN_PATH = "/refresh";
     private static final String USER_NOT_FOUND_MSG = "User not found.";
+    private static final String USER_PRINCIPAL_NOT_FOUND_MSG = "UserPrincipal not found.";
     private static final String BEARER = "Bearer ";
     private static final String AUTHORITIES_DELIMITER = ",";
     private static final String ROLE_PREFIX = "ROLE_";
@@ -52,11 +67,14 @@ public class JwtTokenRefreshFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        var authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
         try {
-            if (authorizationHeader != null && authorizationHeader.startsWith(BEARER)) {
+            if (authentication != null) {
 
-                var refreshToken = authorizationHeader.substring(BEARER.length());
+                var userPrincipal = (UserPrincipal) authentication.getPrincipal();
+                var actualUserPrincipal = userPrincipalService.findByUsername(userPrincipal.getUsername());
+
+                var refreshToken = actualUserPrincipal.getRefreshToken();
                 var secretKey = Keys.hmacShaKeyFor(jwtKey.getBytes(StandardCharsets.UTF_8));
 
                 var claims = Jwts.parserBuilder()
@@ -65,34 +83,43 @@ public class JwtTokenRefreshFilter extends OncePerRequestFilter {
                         .parseClaimsJws(refreshToken)
                         .getBody();
 
-                var email = String.valueOf(claims.get(SecurityConstants.EMAIL_NAME));
+                if (actualUserPrincipal.isEnabled()) {
+                    var email = actualUserPrincipal.getUsername();
+//                    var email = String.valueOf(claims.get(SecurityConstants.EMAIL_NAME));
 
-                var user = userRepository
-                        .findByEmail(email)
-                        .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MSG));
+//                    var user = userRepository
+//                            .findByEmail(email)
+//                            .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MSG));
+                    var user = actualUserPrincipal.getUser();
 
-                var authorities = new HashSet<GrantedAuthority>();
-                authorities.add(new SimpleGrantedAuthority(ROLE_PREFIX + user.getRole().name()));
+                    var authorities = new HashSet<GrantedAuthority>();
+                    authorities.add(new SimpleGrantedAuthority(ROLE_PREFIX + user.getRole().getName().name()));
+                    user
+                            .getRole()
+                            .getPermissions()
+                            .forEach(permission -> {
+                                authorities.add(new SimpleGrantedAuthority(permission.getName().name()));
+                            });
 
-                var nowDate = new Date();
-                var accessToken = Jwts.builder()
-                        .setIssuer(request.getRequestURL().toString())
-                        .setSubject(SUBJECT_ACCESS_TOKEN)
-                        .claim(SecurityConstants.ID_NAME, user.getId())
-                        .claim(SecurityConstants.EMAIL_NAME, user.getEmail())
-                        .claim(SecurityConstants.AUTHORITIES_NAME, populateAuthorities(authorities))
-                        .setIssuedAt(nowDate)
-                        .setExpiration(new Date(nowDate.getTime() + expirationTime))
-                        .signWith(secretKey)
-                        .compact();
+                    var nowDate = new Date();
+                    var accessToken = Jwts.builder()
+                            .setIssuer(request.getRequestURL().toString())
+                            .setSubject(SUBJECT_ACCESS_TOKEN)
+                            .claim(SecurityConstants.ID_NAME, user.getId())
+                            .claim(SecurityConstants.EMAIL_NAME, user.getEmail())
+                            .claim(SecurityConstants.AUTHORITIES_NAME, populateAuthorities(authorities))
+                            .setIssuedAt(nowDate)
+                            .setExpiration(new Date(nowDate.getTime() + expirationTime))
+                            .signWith(secretKey)
+                            .compact();
 
-                var tokensMap = new HashMap<>();
-                tokensMap.put(SUBJECT_ACCESS_TOKEN, accessToken);
-                tokensMap.put(SUBJECT_REFRESH_TOKEN, refreshToken);
-                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                new ObjectMapper().writeValue(response.getOutputStream(), tokensMap);
+                    var tokensMap = new HashMap<>();
+                    tokensMap.put(SUBJECT_ACCESS_TOKEN, accessToken);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    new ObjectMapper().writeValue(response.getOutputStream(), tokensMap);
+//                    objectMapper.writeValue(response.getOutputStream(), tokensMap);
+                }
             }
-            filterChain.doFilter(request, response);
         } catch (Exception ex) {
             log.error(VALIDATION_EXCEPTION_LOG, ex.getMessage());
             response.setStatus(HttpStatus.FORBIDDEN.value());
@@ -100,7 +127,9 @@ public class JwtTokenRefreshFilter extends OncePerRequestFilter {
             errorMap.put(ERROR_MESSAGE_KEY, ex.getMessage());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             new ObjectMapper().writeValue(response.getOutputStream(), errorMap);
+//            objectMapper.writeValue(response.getOutputStream(), errorMap);
         }
+        filterChain.doFilter(request, response);
     }
 
     @Override

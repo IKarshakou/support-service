@@ -1,7 +1,7 @@
 package com.training.repository;
 
 import com.training.entity.User;
-import com.training.entity.enums.Role;
+import com.training.entity.enums.RoleEnum;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ class UserRepositoryTest {
     private static final String EMAIL = "Maria_Some_Test@gmail.com";
     private static final String PASSWORD = "1Oe)weE";
 
-    private final User user = User.builder().email(EMAIL).role(Role.EMPLOYEE).password(PASSWORD).build();
+    private final User user = User.builder().email(EMAIL).roleEnum(RoleEnum.EMPLOYEE).password(PASSWORD).build();
 
     @AfterEach
     void tearDown() {

@@ -1,12 +1,12 @@
 databaseChangeLog:
   - changeSet:
-      id: alter-table-tickets-description
+      id: fill-permissions-table
       author: IKarshakou
       changes:
         - sqlFile:
             dbms: 'postgresql'
             encoding: UTF-8
             stripComments: true
-            path: db/changelog/changeset/sql/04-alter-table-tickets-column-description.sql
+            path: db/changelog/changeset/sql/02-fill-permissions-table.sql
         - tagDatabase:
-            tag: alter_tickets_description
+            tag: fill_permissions_table

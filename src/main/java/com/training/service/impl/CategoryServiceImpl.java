@@ -5,10 +5,10 @@ import com.training.mapper.CategoryMapper;
 import com.training.repository.CategoryRepository;
 import com.training.service.CategoryService;
 import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Example;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +32,9 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+//    @PostAuthorize("returnObject.name != 'some thing'")
+//    @Transactional(noRollbackFor = IllegalArgumentException.class)
+//    @Transactional(rollbackFor = IllegalArgumentException.class)
     @Transactional
     public CategoryDto addCategory(CategoryDto categoryDto) {
         var category = categoryMapper.convertToEntity(categoryDto);
@@ -40,7 +43,13 @@ public class CategoryServiceImpl implements CategoryService {
             throw new EntityExistsException(CATEGORY_ALREADY_EXISTS_MSG);
         }
 
-        return categoryMapper.convertToDto(categoryRepository.save(category));
+        var savedCategory = categoryRepository.save(category);
+
+//        if (true) {
+//            throw new IllegalArgumentException();
+//        }
+
+        return categoryMapper.convertToDto(savedCategory);
     }
 
     @Override

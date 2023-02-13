@@ -4,7 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -16,6 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -32,8 +32,8 @@ public class History {
 
     @Id
     @GeneratedValue
-    @Column(name = "history_id",
-            updatable = false)
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
+    @Column(updatable = false)
     private UUID id;
 
     @ToString.Exclude
@@ -44,13 +44,12 @@ public class History {
     private Ticket ticket;
 
     @CreationTimestamp
-    @Column(name = "history_date",
+    @Column(name = "creation_date",
             updatable = false,
             nullable = false)
     private LocalDateTime date;
 
     @Setter
-    @Column(name = "history_action")
     private String action;
 
     @ToString.Exclude

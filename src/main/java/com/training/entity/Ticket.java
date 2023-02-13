@@ -9,7 +9,6 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -22,8 +21,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -39,28 +41,31 @@ import java.util.UUID;
 public class Ticket {
 
     @Id
-    @GeneratedValue
-    @Column(name = "ticket_id",
-            updatable = false)
+    @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name = "uuid", strategy = "uuid2", parameters = {
+            @Parameter(
+                    name = "uuid_gen_strategy_class",
+                    value = "org.hibernate.id.uuid.CustomVersionOneStrategy"
+            )
+    })
+    @Column(updatable = false)
     private UUID id;
 
     @Setter
-    @Column(name = "ticket_name",
-            nullable = false)
+    @Column(nullable = false)
     private String name;
 
     @Setter
-    @Column(name = "ticket_description")
     private String description;
 
     @CreationTimestamp
     @Column(name = "created_on",
             updatable = false,
             nullable = false)
-    private LocalDate creationDate;
+    private LocalDateTime creationDate;
 
     @Column(name = "desired_resolution_date")
-    private LocalDate desiredResolutionDate;
+    private LocalDateTime desiredResolutionDate;
 
     @ToString.Exclude
     @Setter
@@ -76,7 +81,7 @@ public class Ticket {
 
     @Setter
     @Enumerated(EnumType.STRING)
-    @Column(name = "state_id", nullable = false)
+    @Column(nullable = false)
     private State state;
 
     @ToString.Exclude
@@ -87,7 +92,7 @@ public class Ticket {
 
     @Setter
     @Enumerated(EnumType.STRING)
-    @Column(name = "urgency_id", nullable = false)
+    @Column(nullable = false)
     private Urgency urgency;
 
     @ToString.Exclude

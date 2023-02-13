@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: fill-roles-permissions-table
+      author: IKarshakou
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            encoding: UTF-8
+            stripComments: true
+            path: db/changelog/changeset/sql/04-fill-roles-permissions-table.sql
+        - tagDatabase:
+            tag: fill_roles_permissions_table

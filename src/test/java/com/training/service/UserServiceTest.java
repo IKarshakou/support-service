@@ -2,7 +2,7 @@ package com.training.service;
 
 import com.training.dto.user.InputUserDto;
 import com.training.entity.User;
-import com.training.entity.enums.Role;
+import com.training.entity.enums.RoleEnum;
 import com.training.mapper.UserMapper;
 import com.training.repository.UserRepository;
 import com.training.service.impl.UserServiceImpl;
@@ -32,7 +32,7 @@ class UserServiceTest {
     private static final String PASSWORD = "1Oe)weE";
 
     private final InputUserDto inputUserDto = InputUserDto.builder().email(EMAIL).password(PASSWORD).build();
-    private final User user = User.builder().email(EMAIL).role(Role.EMPLOYEE).password(PASSWORD).build();
+    private final User user = User.builder().email(EMAIL).roleEnum(RoleEnum.EMPLOYEE).password(PASSWORD).build();
 
     @BeforeEach
     void setUp() {

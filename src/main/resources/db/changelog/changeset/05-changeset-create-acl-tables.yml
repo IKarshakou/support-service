@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-acl-tables
+      author: IKarshakou
+      changes:
+        - sqlFile:
+            dbms: 'postgresql'
+            encoding: UTF-8
+            stripComments: true
+            path: db/changelog/changeset/sql/05-create-acl-tables.sql
+        - tagDatabase:
+            tag: create_acl_tables

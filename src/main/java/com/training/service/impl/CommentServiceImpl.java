@@ -6,11 +6,10 @@ import com.training.entity.Ticket;
 import com.training.mapper.CommentMapper;
 import com.training.repository.CommentRepository;
 import com.training.repository.UserRepository;
-import com.training.security.UserPrincipal;
+import com.training.entity.UserPrincipal;
 import com.training.service.CommentService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,7 +49,7 @@ public class CommentServiceImpl implements CommentService {
                 .getPrincipal();
 
         var user = userRepository
-                .findById(userPrincipal.getId())
+                .findById(userPrincipal.getUser().getId())
                 .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
         var ticket = Ticket.builder()
                 .id(ticketId)

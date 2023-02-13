@@ -4,7 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -33,8 +32,7 @@ public class Feedback {
 
     @Id
     @GeneratedValue
-    @Column(name = "feedback_id",
-            updatable = false)
+    @Column(updatable = false)
     private UUID id;
 
     @ToString.Exclude
@@ -45,18 +43,16 @@ public class Feedback {
     private User user;
 
     @Setter
-    @Column(name = "feedback_rate",
-            nullable = false)
+    @Column(nullable = false)
     private Byte rate;
 
     @CreationTimestamp
-    @Column(name = "feedback_date",
+    @Column(name = "creation_date",
             updatable = false,
             nullable = false)
     private LocalDate date;
 
     @Setter
-    @Column(name = "feedback_text")
     private String text;
 
     @ToString.Exclude

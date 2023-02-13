@@ -2,7 +2,22 @@ server:
   port: ${SERVER_PORT:8080}
   servlet:
     context-path: ${CONTEXT_PATH:/support-service}
+
+# swagger-ui custom path
+#springdoc:
+#  swagger-ui:
+#    path: /swagger-ui.html
+
+# spring WebMvc support (tests)
+# /api-docs endpoint custom path
+#springdoc:
+#  api-docs:
+#    path: /api-docs
+
 spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   application:
     name: support-service
   datasource:
@@ -33,7 +48,7 @@ spring:
     port: 1025
     properties:
       mail:
-        debug: true
+#        debug: true
         smtp:
           ssl:
             trust: "*"
@@ -52,14 +67,28 @@ spring:
       location: ${MULTIPART_LOCATION:src/main/resources/attachments/uploads}
       max-file-size: 5MB
       max-request-size: 5MB
+#  jackson:
+#    serialization:
+#      wrap-root-value: true
+
 upload:
   path: ${ATTACHMENTS_DIR:src/main/resources/attachments/attachments}
+
 logging:
   file:
     name: logs/support-service.log
   level:
     root: info
+#    org.springframework.web: DEBUG
 #    org.springframework.security.web.FilterChainProxy: DEBUG
   logback:
     rollingpolicy:
       file-name-pattern: logs/support-service-%d{yyyy-MM-dd}.%i.log
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+

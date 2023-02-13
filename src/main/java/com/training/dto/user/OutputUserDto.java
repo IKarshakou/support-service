@@ -1,5 +1,6 @@
 package com.training.dto.user;
 
+import com.training.dto.role.OutputRoleDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,6 @@ public class OutputUserDto {
     private UUID id;
     private String firstName;
     private String lastName;
-    private String role;
+    private OutputRoleDto role;
     private String email;
 }

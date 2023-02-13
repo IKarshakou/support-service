@@ -2,7 +2,8 @@ package com.training.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.training.constants.SecurityConstants;
-import com.training.security.UserPrincipal;
+import com.training.entity.UserPrincipal;
+import com.training.service.UserPrincipalService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
@@ -10,10 +11,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -25,6 +29,12 @@ import java.util.HashSet;
 
 @Slf4j
 public class JwtTokenGeneratorFilter extends OncePerRequestFilter {
+
+    @Autowired
+    private UserPrincipalService userPrincipalService;
+
+//    @Autowired
+//    private ObjectMapper objectMapper;
 
     private static final String SUBJECT_ACCESS_TOKEN = "Access Token";
     private static final String SUBJECT_REFRESH_TOKEN = "Refresh Token";
@@ -39,6 +49,7 @@ public class JwtTokenGeneratorFilter extends OncePerRequestFilter {
     private Long expirationTime;
 
     @Override
+//    @Transactional
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
@@ -53,7 +64,7 @@ public class JwtTokenGeneratorFilter extends OncePerRequestFilter {
                     .setIssuer(request.getRequestURL().toString())
                     .setSubject(SUBJECT_ACCESS_TOKEN)
                     .claim(SecurityConstants.ID_NAME, userPrincipal.getId())
-                    .claim(SecurityConstants.EMAIL_NAME, userPrincipal.getEmail())
+                    .claim(SecurityConstants.EMAIL_NAME, userPrincipal.getUsername())
                     .claim(SecurityConstants.AUTHORITIES_NAME, populateAuthorities(userPrincipal.getAuthorities()))
                     .setIssuedAt(nowDate)
                     .setExpiration(new Date(nowDate.getTime() + expirationTime))
@@ -62,11 +73,15 @@ public class JwtTokenGeneratorFilter extends OncePerRequestFilter {
             var refreshToken = Jwts.builder()
                     .setIssuer(request.getRequestURL().toString())
                     .setSubject(SUBJECT_REFRESH_TOKEN)
-                    .claim(SecurityConstants.EMAIL_NAME, userPrincipal.getEmail())
+                    .claim(SecurityConstants.EMAIL_NAME, userPrincipal.getUsername())
                     .setIssuedAt(nowDate)
                     .setExpiration(new Date(nowDate.getTime() + REFRESH_TOKEN_EXP_TIME))
                     .signWith(secretKey)
                     .compact();
+
+            userPrincipal.setRefreshToken(refreshToken);
+            userPrincipal.setEnabled(true);
+            userPrincipalService.saveRefreshToken(refreshToken, userPrincipal.getId());
 
             log.info(AUTHENTICATION_LOG,
                     authentication.getPrincipal().toString(),
@@ -74,9 +89,9 @@ public class JwtTokenGeneratorFilter extends OncePerRequestFilter {
 
             var tokensMap = new HashMap<>();
             tokensMap.put(SUBJECT_ACCESS_TOKEN, accessToken);
-            tokensMap.put(SUBJECT_REFRESH_TOKEN, refreshToken);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             new ObjectMapper().writeValue(response.getOutputStream(), tokensMap);
+//            objectMapper.writeValue(response.getOutputStream(), tokensMap);
         }
         filterChain.doFilter(request, response);
     }

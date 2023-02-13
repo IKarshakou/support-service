@@ -12,7 +12,8 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
-@Mapper(imports = {CategoryMapper.class, UserMapper.class, CommentMapper.class, Urgency.class})
+@Mapper(imports = {CategoryMapper.class, CommentMapper.class, Urgency.class},
+        uses = UserMapper.class)
 public interface TicketMapper {
 
     OutputTicketDto convertToDto(Ticket ticket);

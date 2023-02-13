@@ -23,56 +23,49 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Object> entityNotFound(EntityNotFoundException ex, WebRequest request) {
-        log.error(ex.toString());
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
     @ExceptionHandler(EntityExistsException.class)
     public ResponseEntity<Object> entityIsAlreadyExists(EntityExistsException ex, WebRequest request) {
-        log.error(ex.toString());
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Object> invalidJwtToken(BadCredentialsException ex, WebRequest request) {
-        log.error(ex.toString());
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> invalidInputData(IllegalArgumentException ex, WebRequest request) {
-        log.error(ex.toString());
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(TicketNotAvailableException.class)
     public ResponseEntity<Object> ticketNotAvailable(TicketNotAvailableException ex, WebRequest request) {
-        log.error(ex.toString());
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 
     @ExceptionHandler(AttachmentUploadException.class)
-    public ResponseEntity<Object> ticketNotAvailable(AttachmentUploadException ex, WebRequest request) {
-        log.error(ex.toString());
+    public ResponseEntity<Object> attachmentNotUploaded(AttachmentUploadException ex, WebRequest request) {
+        log.error(ex.toString(), ex);
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR,
                 request);
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<Object> exceededMaxFileUploadSize(MaxUploadSizeExceededException ex, WebRequest request) {
-        log.error(ex.toString());
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.EXPECTATION_FAILED, request);
     }
 
     @ExceptionHandler(AttachmentNotFoundException.class)
     public ResponseEntity<Object> fileNotFound(AttachmentNotFoundException ex, WebRequest request) {
-        log.error(ex.toString());
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.EXPECTATION_FAILED, request);
     }
 
     @ExceptionHandler(MailSendException.class)
     public ResponseEntity<Object> mailNotSend(MailSendException ex, WebRequest request) {
-        log.error(ex.toString());
+        log.error(ex.toString(), ex);
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR,
                 request);
     }

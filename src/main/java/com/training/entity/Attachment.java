@@ -30,13 +30,12 @@ public class Attachment {
 
     @Id
     @GeneratedValue
-    @Column(name = "attachment_id",
-            updatable = false)
+    @Column(updatable = false)
     private UUID id;
 
     @ToString.Exclude
     @Setter
-    @Column(name = "attachment_blob",
+    @Column(name = "path",
             unique = true,
             nullable = false)
     private String filePath;
@@ -49,8 +48,7 @@ public class Attachment {
     private Ticket ticket;
 
     @Setter
-    @Column(name = "attachment_name",
-            nullable = false)
+    @Column(nullable = false)
     private String name;
 
     @Override

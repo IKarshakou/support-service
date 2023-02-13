@@ -1,0 +1,22 @@
+package com.training.entity.enums;
+
+public enum PermissionEnum {
+    CREATE_TICKET,
+    READ_TICKET,
+    UPDATE_TICKET,
+    DELETE_TICKET,
+    CREATE_CATEGORY,
+    DELETE_CATEGORY,
+    CREATE_COMMENT,
+    READ_COMMENT,
+    UPDATE_COMMENT,
+    DELETE_COMMENT,
+    CREATE_FEEDBACK,
+    READ_FEEDBACK,
+    UPDATE_FEEDBACK,
+    DELETE_FEEDBACK,
+    CREATE,
+    READ,
+    UPDATE,
+    DELETE
+}
